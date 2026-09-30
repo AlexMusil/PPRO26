@@ -1,0 +1,23 @@
+# Systémové soubory a editory
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.user
+
+# Build výstupy a závislosti
+node_modules/
+dist/
+bin/
+obj/
+build/
+target/
+__pycache__/
+*.pyc
+
+# Docker a databázová lokální data
+*.local
+.env.local
+docker-data/
+*.sqlite

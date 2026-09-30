@@ -1,0 +1,16 @@
+#!/bin/sh
+# Pre-commit hook: Kontrola udržování README.md jako jediného zdroje pravdy (SSOT)
+
+if [ ! -f "README.md" ]; then
+    echo "======================================================================"
+    echo "CHYBA: Soubor README.md neexistuje!"
+    echo "README.md slouží jako jediný zdroj pravdy (SSOT) a technická dokumentace."
+    echo "======================================================================"
+    exit 1
+fi
+
+echo "======================================================================"
+echo "[PRE-COMMIT HOOK] Kontrola: Ujistěte se, že provedené změny a rozhodnutí"
+echo "jsou řádně zaznamenány v README.md (Single Source of Truth)."
+echo "======================================================================"
+exit 0
