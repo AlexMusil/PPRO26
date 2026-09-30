@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evidence pacientů | Ordinace Na Vyhlídce</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header>
+        <div class="header-inner">
+            <div class="logo-group">
+                <div class="logo-icon">+</div>
+                <div>
+                    <h1 class="clinic-title">Ordinace Na Vyhlídce</h1>
+                    <p class="clinic-subtitle">MUDr. Jana Hrubá &bull; Informační a rezervační systém</p>
+                </div>
+            </div>
+            <div class="system-badge">
+                Pilotní modul: Evidence pacientů
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Notifikace o úspěchu -->
+        <div th:if="${uspechZprava}" class="alert alert-success">
+            <strong>&#10004; Úspěch:</strong> <span th:text="${uspechZprava}">Pacient byl úspěšně zaevidován.</span>
+        </div>
+
+        <!-- Varování před duplicitou (Pravidlo #4) -->
+        <div th:if="${duplicitaChyba}" class="alert alert-danger">
+            <strong>&#9888; Zamezeno duplicitě:</strong> <span th:text="${duplicitaChyba}">Pacient s tímto číslem pojištěnce již existuje.</span>
+        </div>
+
+        <!-- Chyba formuláře -->
+        <div th:if="${chybaFormulare}" class="alert alert-danger">
+            <strong>&#9888; Chyba:</strong> <span th:text="${chybaFormulare}">Zkontrolujte prosím zadané údaje.</span>
+        </div>
+
+        <!-- Vyhledávací panel: Okamžité vyhledání při vyzvánění telefonu -->
+        <div class="search-card">
+            <h2 class="search-title">
+                <span>&#128222;</span> Rychlé vyhledání pacienta (při příchozím hovoru)
+            </h2>
+            <form th:action="@{/}" method="get" class="search-form">
+                <div class="search-input-wrapper">
+                    <input type="text"
+                           name="query"
+                           class="search-input"
+                           placeholder="Zadejte příjmení, telefon nebo rodné číslo pacienta..."
+                           th:value="${query}"
+                           autofocus autocomplete="off">
+                </div>
+                <button type="submit" class="btn btn-primary">&#128269; Vyhledat</button>
+                <a th:if="${query != null && !query.isEmpty()}" th:href="@{/}" class="btn btn-secondary">Zrušit filtr</a>
+            </form>
+            <p class="helper-text" style="margin-top: 0.75rem;">
+                Tip pro paní Věru: Pacienti při volání říkají jméno i telefon – systém prohledává obojí naráz bez nutnosti přepínání.
+            </p>
+        </div>
+
+        <!-- Hlavní obsah: Seznam pacientů + Formulář nového zápisu -->
+        <div class="main-grid">
+
+            <!-- Karta se seznamem pacientů -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        Seznam pacientů 
+                        <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted);" 
+                              th:text="'(' + ${#lists.size(pacienti)} + ' nalezeno)'">(10)</span>
+                    </h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Příjmení a jméno</th>
+                                    <th>Telefon</th>
+                                    <th>Číslo pojištěnce (RČ)</th>
+                                    <th>Rok nar.</th>
+                                    <th>Pojišťovna</th>
+                                    <th>Poznámka</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p : ${pacienti}">
+                                    <td>
+                                        <div class="patient-name" th:text="${p.prijmeni + ' ' + p.jmeno}">Nováková Marie</div>
+                                    </td>
+                                    <td>
+                                        <span class="patient-phone" th:text="${p.telefon}">+420 777 123 456</span>
+                                    </td>
+                                    <td>
+                                        <code th:text="${p.cisloPojistence}">685412/1234</code>
+                                    </td>
+                                    <td th:text="${p.rokNarozeni}">1968</td>
+                                    <td>
+                                        <span class="badge badge-vzp" th:if="${p.pojistovna == '111'}">111 (VZP)</span>
+                                        <span class="badge badge-ozp" th:if="${p.pojistovna == '207'}">207 (OZP)</span>
+                                        <span class="badge badge-zpmv" th:if="${p.pojistovna == '211'}">211 (ZPMV)</span>
+                                        <span class="badge badge-other" th:if="${p.pojistovna != '111' && p.pojistovna != '207' && p.pojistovna != '211'}" th:text="${p.pojistovna}">205</span>
+                                    </td>
+                                    <td style="font-size: 0.85rem; color: var(--text-muted);" th:text="${p.poznamka}">Alergie na PNC</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(pacienti)}">
+                                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                                        Žádný pacient neodpovídá zadanému hledání. Můžete jej zaregistrovat ve formuláři vpravo.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Karta pro registraci nového pacienta -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">+ Zapsat nového pacienta</h3>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/pacienti/novy}" th:object="${novyPacient}" method="post">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="jmeno">Jméno *</label>
+                                <input type="text" id="jmeno" th:field="*{jmeno}" class="form-control" placeholder="např. Jan" required>
+                                <div class="form-error" th:if="${#fields.hasErrors('jmeno')}" th:errors="*{jmeno}">Chyba jména</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="prijmeni">Příjmení *</label>
+                                <input type="text" id="prijmeni" th:field="*{prijmeni}" class="form-control" placeholder="např. Novák" required>
+                                <div class="form-error" th:if="${#fields.hasErrors('prijmeni')}" th:errors="*{prijmeni}">Chyba příjmení</div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="rokNarozeni">Rok narození *</label>
+                                <input type="number" id="rokNarozeni" th:field="*{rokNarozeni}" class="form-control" min="1900" max="2026" placeholder="např. 1985" required>
+                                <div class="form-error" th:if="${#fields.hasErrors('rokNarozeni')}" th:errors="*{rokNarozeni}">Chyba roku</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="pojistovna">Pojišťovna *</label>
+                                <select id="pojistovna" th:field="*{pojistovna}" class="form-control" required>
+                                    <option value="111">111 - Všeobecná zdravotní pojišťovna (VZP)</option>
+                                    <option value="201">201 - Vojenská zdravotní pojišťovna (VOZP)</option>
+                                    <option value="205">205 - Česká průmyslová ZP (ČPZP)</option>
+                                    <option value="207">207 - Oborová ZP (OZP)</option>
+                                    <option value="211">211 - ZP Ministerstva vnitra (ZPMV)</option>
+                                    <option value="213">213 - Revírní bratrská pokladna (RBP)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="cisloPojistence">Číslo pojištěnce (rodné číslo) *</label>
+                            <input type="text" id="cisloPojistence" th:field="*{cisloPojistence}" class="form-control" placeholder="např. 850512/1234" required>
+                            <p class="helper-text">Unikátní identifikátor pacienta (zamezuje vzniku duplicitních karet).</p>
+                            <div class="form-error" th:if="${#fields.hasErrors('cisloPojistence')}" th:errors="*{cisloPojistence}">Chyba RČ</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="telefon">Telefonní číslo *</label>
+                            <input type="text" id="telefon" th:field="*{telefon}" class="form-control" placeholder="+420 777 123 456" required>
+                            <div class="form-error" th:if="${#fields.hasErrors('telefon')}" th:errors="*{telefon}">Chyba telefonu</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="poznamka">Zdravotní poznámka (volitelné)</label>
+                            <textarea id="poznamka" th:field="*{poznamka}" class="form-control" rows="2" placeholder="Chronická onemocnění, alergie, stálá medikace..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success" style="width: 100%;">
+                            &#10004; Zaregistrovat pacienta
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Ordinace Na Vyhlídce &bull; Předmět PPRO (FIM UHK) &bull; Třívrstvá architektura v Java Spring Boot & PostgreSQL</p>
+    </footer>
+
+</body>
+</html>

@@ -153,21 +153,68 @@ erDiagram
 
 ---
 
-## 5. Spuštění a provoz systému
+## 5. Technologický stack a struktura projektu
 
-Systém je plně kontejnerizován pro snadné lokální spuštění bez nutnosti instalace lokálních závislostí:
+### Použité technologie
+- **Jazyk & Platforma:** Java 21 LTS (OpenJDK)
+- **Framework:** Spring Boot 3.3.4 (Spring Web, Spring Data JPA, Bean Validation, Thymeleaf)
+- **Relační databáze:** PostgreSQL 16 (v Docker kontejneru)
+- **Databázové migrace:** Flyway (verzované SQL migrace v `src/main/resources/db/migration`)
+- **Prezentační vrstva:** Thymeleaf + moderní Vanilla CSS (optimalizováno pro ergonomii recepce) & REST API
+- **Testování:** JUnit 5, Mockito (unit testy byznys logiky), MockMvc & H2 (integrační testy kontrolerů)
+- **Kontejnerizace:** Multi-stage Dockerfile a Docker Compose
 
-```bash
-# Spuštění kompletního prostředí (aplikace + relační databáze + migrace)
-docker compose up --build
+### Adresářová struktura třívrstvé architektury
+```
+src/main/java/cz/uhk/fim/ppro/ordinace/
+├── OrdinaceApplication.java        # Vstupní bod Spring Boot aplikace
+├── presentation/                   # 1. Prezentační vrstva
+│   ├── controller/                 # PacientWebController (UI) & PacientRestController (REST API)
+│   ├── dto/                        # PacientCreateDto, PacientResponseDto
+│   └── GlobalExceptionHandler.java # Centralizované ošetření chyb a mapování stavových kódů
+├── application/                    # 2. Aplikační a doménová vrstva
+│   ├── model/                      # Doménová entita Pacient
+│   ├── service/                    # PacientService (vyhledávání, validace, detekce duplicit)
+│   └── exception/                  # Doménové výjimky (DuplicateEntityException, BusinessRuleException...)
+└── infrastructure/                 # 3. Infrastrukturní a datová vrstva
+    └── repository/                 # PacientRepository (Spring Data JPA, SQL dotazy pro fulltext)
 ```
 
 ---
 
-## 6. Protokol o postupu a změnách (Decision & Change Log)
+## 6. Spuštění a provoz systému
+
+Systém je plně kontejnerizován pro snadné lokální spuštění bez nutnosti instalace lokálních závislostí:
+
+```bash
+# Spuštění kompletního prostředí (aplikace + relační databáze PostgreSQL + automatické Flyway migrace)
+docker compose up --build
+```
+
+Po spuštění je systém dostupný na adresách:
+- **Webové rozhraní pro recepci (paní Věru):** [http://localhost:8080](http://localhost:8080)
+- **REST API pro integrace:** [http://localhost:8080/api/pacienti](http://localhost:8080/api/pacienti)
+
+### Spuštění testů
+Unit a integrační testy ověřují správné chování vyhledávání, detekci duplicit a zákaz mazání historie pacienta:
+```bash
+docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn test
+```
+
+---
+
+## 7. Protokol o postupu a změnách (Decision & Change Log)
 
 - **2026-09-30:**
   - Inicializace git repozitáře a propojení s GitHub (`AlexMusil/PPRO26`).
-  - Vytvoření souboru [`AGENTS.md`](file:///c:/Users/alsug/Documents/FIM/Ing/ppro26/AGENTS.md) s pravidly pro asistenta (commit s `-m`, zákaz push bez explicitního schválení, aktualizace dokumentace).
+  - Vytvoření pravidel asistenta v [`AGENTS.md`](file:///c:/Users/alsug/Documents/FIM/Ing/ppro26/AGENTS.md) (commit s `-m`, zákaz push bez explicitního souhlasu, udržování dokumentace).
   - Vytvoření výchozí technické dokumentace a Seznamu rozhodnutí v [`README.md`](file:///c:/Users/alsug/Documents/FIM/Ing/ppro26/README.md) pro Zadání A (Rezervace v ordinaci).
   - Nastavení git pre-commit hooku pro kontrolu aktuálnosti dokumentace.
+  - **Pilotní demo – Entita Pacient:**
+    - Zvolen technologický stack Java 21, Spring Boot 3.3.4, PostgreSQL 16 a Flyway.
+    - Implementována třívrstvá architektura (`presentation` $\to$ `application` $\to$ `infrastructure`).
+    - Vytvořena migrace `V1__create_pacient_table.sql` a seed skript `V2__seed_pacienti.sql` s 10 syntetickými záznamy pacientů (včetně případů z příběhu klienta: paní Nováková, paní Krátká).
+    - Implementována doménová pravidla v `PacientService`: ochrana před duplicitami (unikátní rodné číslo / číslo pojištěnce, shoda jméno + telefon), striktní zákaz mazání historie pacienta (`BusinessRuleException`).
+    - Vytvořeno ergonomické webové UI (`pacienti.html`, `style.css`) s okamžitým telefonním vyhledávačem a přehledným zápisem nového pacienta.
+    - Připraven `Dockerfile` (multi-stage) a `docker-compose.yml` s healthcheckem pro PostgreSQL.
+    - Implementována sada unit a integračních testů (`PacientServiceTest`, `PacientRestControllerTest`).
