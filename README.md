@@ -229,4 +229,5 @@ docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn
     - Vytvořen klientský skript `patient-form.js` (automatické doplňování lomítka, okamžitá vizuální indikace chyb a blokace odeslání nevalidního formuláře).
     - Aktualizovány testy `PacientServiceTest` a `PacientRestControllerTest` o testovací scénáře odmítnutí chybných údajů (HTTP 400 Bad Request, BusinessRuleException).
     - Vyčištění uživatelského rozhraní a zdrojových kódů od vývojových a meta poznámek pro čisté produkční zobrazení.
+    - Nahrazení emotikonů v uživatelském rozhraní čistými vektorovými SVG ikonami a zjednodušení záhlaví.
 

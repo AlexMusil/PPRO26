@@ -11,10 +11,15 @@
     <header>
         <div class="header-inner">
             <div class="logo-group">
-                <div class="logo-icon">+</div>
+                <div class="logo-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
                 <div>
                     <h1 class="clinic-title">Ordinace Na Vyhlídce</h1>
-                    <p class="clinic-subtitle">MUDr. Jana Hrubá &bull; Informační a rezervační systém</p>
+                    <p class="clinic-subtitle">MUDr. Jana Hrubá</p>
                 </div>
             </div>
         </div>
@@ -23,20 +28,24 @@
     <div class="container">
 
         <div th:if="${uspechZprava}" class="alert alert-success">
-            <strong>&#10004; Úspěch:</strong> <span th:text="${uspechZprava}">Pacient byl úspěšně zaevidován.</span>
+            <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <strong>Úspěch:</strong> <span th:text="${uspechZprava}">Pacient byl úspěšně zaevidován.</span>
         </div>
 
         <div th:if="${duplicitaChyba}" class="alert alert-danger">
-            <strong>&#9888; Chyba:</strong> <span th:text="${duplicitaChyba}">Pacient s tímto číslem pojištěnce již existuje.</span>
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <strong>Chyba:</strong> <span th:text="${duplicitaChyba}">Pacient s tímto číslem pojištěnce již existuje.</span>
         </div>
 
         <div th:if="${chybaFormulare}" class="alert alert-danger">
-            <strong>&#9888; Chyba:</strong> <span th:text="${chybaFormulare}">Zkontrolujte prosím zadané údaje.</span>
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <strong>Chyba:</strong> <span th:text="${chybaFormulare}">Zkontrolujte prosím zadané údaje.</span>
         </div>
 
         <div class="search-card">
             <h2 class="search-title">
-                <span>&#128269;</span> Vyhledávání pacientů
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                Vyhledávání pacientů
             </h2>
             <form th:action="@{/}" method="get" class="search-form">
                 <div class="search-input-wrapper">
@@ -47,7 +56,10 @@
                            th:value="${query}"
                            autofocus autocomplete="off">
                 </div>
-                <button type="submit" class="btn btn-primary">&#128269; Vyhledat</button>
+                <button type="submit" class="btn btn-primary">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Vyhledat
+                </button>
                 <a th:if="${query != null && !query.isEmpty()}" th:href="@{/}" class="btn btn-secondary">Zrušit filtr</a>
             </form>
         </div>
@@ -108,7 +120,10 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">+ Nový pacient</h3>
+                    <h3 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Nový pacient
+                    </h3>
                 </div>
                 <div class="card-body">
                     <form th:action="@{/pacienti/novy}" th:object="${novyPacient}" method="post" id="patientForm" novalidate>
@@ -165,7 +180,8 @@
                         </div>
 
                         <button type="submit" class="btn btn-success" style="width: 100%;">
-                            &#10004; Zaregistrovat pacienta
+                            <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Zaregistrovat pacienta
                         </button>
                     </form>
                 </div>

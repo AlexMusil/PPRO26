@@ -165,6 +165,41 @@ header {
   transform: translateY(1px);
 }
 
+.icon {
+  width: 1.1em;
+  height: 1.1em;
+  stroke-width: 2.2;
+  vertical-align: -0.18em;
+  stroke: currentColor;
+  fill: none;
+  display: inline-block;
+}
+
+.btn .icon {
+  margin-right: 0.45rem;
+}
+
+.search-title .icon {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.45rem;
+  color: var(--primary);
+}
+
+.card-title .icon {
+  margin-right: 0.45rem;
+  color: var(--primary);
+}
+
+.alert .icon {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.5rem;
+  vertical-align: -0.2em;
+  flex-shrink: 0;
+}
+
+
 .btn-primary {
   background: var(--primary);
   color: white;
