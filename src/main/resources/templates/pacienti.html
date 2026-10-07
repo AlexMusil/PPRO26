@@ -124,17 +124,17 @@
                     <h3 class="card-title">+ Zapsat nového pacienta</h3>
                 </div>
                 <div class="card-body">
-                    <form th:action="@{/pacienti/novy}" th:object="${novyPacient}" method="post">
+                    <form th:action="@{/pacienti/novy}" th:object="${novyPacient}" method="post" id="patientForm" novalidate>
                         
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label" for="jmeno">Jméno *</label>
-                                <input type="text" id="jmeno" th:field="*{jmeno}" class="form-control" placeholder="např. Jan" required>
+                                <input type="text" id="jmeno" th:field="*{jmeno}" th:errorclass="is-invalid" class="form-control" placeholder="např. Jan" required minlength="2" maxlength="50" autocomplete="given-name">
                                 <div class="form-error" th:if="${#fields.hasErrors('jmeno')}" th:errors="*{jmeno}">Chyba jména</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="prijmeni">Příjmení *</label>
-                                <input type="text" id="prijmeni" th:field="*{prijmeni}" class="form-control" placeholder="např. Novák" required>
+                                <input type="text" id="prijmeni" th:field="*{prijmeni}" th:errorclass="is-invalid" class="form-control" placeholder="např. Novák" required minlength="2" maxlength="50" autocomplete="family-name">
                                 <div class="form-error" th:if="${#fields.hasErrors('prijmeni')}" th:errors="*{prijmeni}">Chyba příjmení</div>
                             </div>
                         </div>
@@ -142,12 +142,12 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label" for="rokNarozeni">Rok narození *</label>
-                                <input type="number" id="rokNarozeni" th:field="*{rokNarozeni}" class="form-control" min="1900" max="2026" placeholder="např. 1985" required>
+                                <input type="number" id="rokNarozeni" th:field="*{rokNarozeni}" th:errorclass="is-invalid" class="form-control" min="1900" max="2026" placeholder="např. 1985" required>
                                 <div class="form-error" th:if="${#fields.hasErrors('rokNarozeni')}" th:errors="*{rokNarozeni}">Chyba roku</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="pojistovna">Pojišťovna *</label>
-                                <select id="pojistovna" th:field="*{pojistovna}" class="form-control" required>
+                                <select id="pojistovna" th:field="*{pojistovna}" th:errorclass="is-invalid" class="form-control" required>
                                     <option value="111">111 - Všeobecná zdravotní pojišťovna (VZP)</option>
                                     <option value="201">201 - Vojenská zdravotní pojišťovna (VOZP)</option>
                                     <option value="205">205 - Česká průmyslová ZP (ČPZP)</option>
@@ -155,25 +155,27 @@
                                     <option value="211">211 - ZP Ministerstva vnitra (ZPMV)</option>
                                     <option value="213">213 - Revírní bratrská pokladna (RBP)</option>
                                 </select>
+                                <div class="form-error" th:if="${#fields.hasErrors('pojistovna')}" th:errors="*{pojistovna}">Chyba pojišťovny</div>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="cisloPojistence">Číslo pojištěnce (rodné číslo) *</label>
-                            <input type="text" id="cisloPojistence" th:field="*{cisloPojistence}" class="form-control" placeholder="např. 850512/1234" required>
-                            <p class="helper-text">Unikátní identifikátor pacienta (zamezuje vzniku duplicitních karet).</p>
+                            <input type="text" id="cisloPojistence" th:field="*{cisloPojistence}" th:errorclass="is-invalid" class="form-control" placeholder="např. 850512/1009" maxlength="11" required autocomplete="off">
+                            <p class="helper-text">Unikátní rodné číslo (systém automaticky doplňuje lomítko a ověřuje kontrolní součet).</p>
                             <div class="form-error" th:if="${#fields.hasErrors('cisloPojistence')}" th:errors="*{cisloPojistence}">Chyba RČ</div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="telefon">Telefonní číslo *</label>
-                            <input type="text" id="telefon" th:field="*{telefon}" class="form-control" placeholder="+420 777 123 456" required>
+                            <input type="tel" id="telefon" th:field="*{telefon}" th:errorclass="is-invalid" class="form-control" placeholder="+420 777 123 456" required autocomplete="tel">
                             <div class="form-error" th:if="${#fields.hasErrors('telefon')}" th:errors="*{telefon}">Chyba telefonu</div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="poznamka">Zdravotní poznámka (volitelné)</label>
-                            <textarea id="poznamka" th:field="*{poznamka}" class="form-control" rows="2" placeholder="Chronická onemocnění, alergie, stálá medikace..."></textarea>
+                            <textarea id="poznamka" th:field="*{poznamka}" th:errorclass="is-invalid" class="form-control" rows="2" maxlength="1000" placeholder="Chronická onemocnění, alergie, stálá medikace..."></textarea>
+                            <div class="form-error" th:if="${#fields.hasErrors('poznamka')}" th:errors="*{poznamka}">Chyba poznámky</div>
                         </div>
 
                         <button type="submit" class="btn btn-success" style="width: 100%;">
@@ -191,5 +193,6 @@
         <p>&copy; 2026 Ordinace Na Vyhlídce &bull; Předmět PPRO (FIM UHK) &bull; Třívrstvá architektura v Java Spring Boot & PostgreSQL</p>
     </footer>
 
+    <script th:src="@{/js/patient-form.js}"></script>
 </body>
 </html>

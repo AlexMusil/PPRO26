@@ -1,17 +1,25 @@
 package cz.uhk.fim.ppro.ordinace.presentation.dto;
 
+import cz.uhk.fim.ppro.ordinace.presentation.validation.ValidPacient;
+import cz.uhk.fim.ppro.ordinace.presentation.validation.ValidRodneCislo;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
+@ValidPacient
 public class PacientCreateDto {
 
     @NotBlank(message = "Křestní jméno je povinné")
+    @Size(min = 2, max = 50, message = "Křestní jméno musí mít 2 až 50 znaků")
+    @Pattern(regexp = "^[a-zA-Zá-žÁ-Žč-žČ-Žď-žĎ-Ž\\s\\-']+$", message = "Jméno může obsahovat pouze písmena, mezeru nebo spojovník")
     private String jmeno;
 
     @NotBlank(message = "Příjmení je povinné")
+    @Size(min = 2, max = 50, message = "Příjmení musí mít 2 až 50 znaků")
+    @Pattern(regexp = "^[a-zA-Zá-žÁ-Žč-žČ-Žď-žĎ-Ž\\s\\-']+$", message = "Příjmení může obsahovat pouze písmena, mezeru nebo spojovník")
     private String prijmeni;
 
     @NotNull(message = "Rok narození je povinný")
@@ -20,15 +28,18 @@ public class PacientCreateDto {
     private Integer rokNarozeni;
 
     @NotBlank(message = "Telefonní číslo je povinné")
-    @Pattern(regexp = "^(\\+420)?\\s*[0-9]{3}\\s*[0-9]{3}\\s*[0-9]{3}$", message = "Telefon musí mít platný formát (např. +420 777 123 456 nebo 777123456)")
+    @Pattern(regexp = "^(\\+420|\\+421)?\\s*[0-9]{3}\\s*[0-9]{3}\\s*[0-9]{3}$", message = "Telefon musí mít platný formát (např. +420 777 123 456 nebo 777123456)")
     private String telefon;
 
     @NotBlank(message = "Číslo pojištěnce (rodné číslo) je povinné")
+    @ValidRodneCislo
     private String cisloPojistence;
 
     @NotBlank(message = "Zdravotní pojišťovna je povinná")
+    @Pattern(regexp = "^(111|201|205|207|209|211|213)$", message = "Zvolte platný kód pojišťovny (např. 111, 201, 205, 207, 211, 213)")
     private String pojistovna;
 
+    @Size(max = 1000, message = "Poznámka může mít maximálně 1000 znaků")
     private String poznamka;
 
     public PacientCreateDto() {

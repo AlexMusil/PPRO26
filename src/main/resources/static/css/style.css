@@ -357,12 +357,23 @@ header {
   border-color: var(--border-focus);
 }
 
-.form-error {
+.form-error,
+.live-error {
   color: var(--danger);
   font-size: 0.82rem;
   margin-top: 0.25rem;
   font-weight: 500;
 }
+
+.form-control.is-invalid {
+  border-color: var(--danger) !important;
+  background-color: var(--danger-bg);
+}
+
+.form-control.is-valid {
+  border-color: var(--success);
+}
+
 
 .form-row {
   display: grid;

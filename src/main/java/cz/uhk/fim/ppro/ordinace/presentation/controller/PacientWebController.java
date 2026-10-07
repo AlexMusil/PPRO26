@@ -1,5 +1,6 @@
 package cz.uhk.fim.ppro.ordinace.presentation.controller;
 
+import cz.uhk.fim.ppro.ordinace.application.exception.BusinessRuleException;
 import cz.uhk.fim.ppro.ordinace.application.exception.DuplicateEntityException;
 import cz.uhk.fim.ppro.ordinace.application.service.PacientService;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.PacientCreateDto;
@@ -60,6 +61,12 @@ public class PacientWebController {
             model.addAttribute("pacienti", pacienti);
             model.addAttribute("query", query != null ? query : "");
             model.addAttribute("duplicitaChyba", e.getMessage());
+            return "pacienti";
+        } catch (BusinessRuleException e) {
+            List<PacientResponseDto> pacienti = pacientService.searchPacienti(query);
+            model.addAttribute("pacienti", pacienti);
+            model.addAttribute("query", query != null ? query : "");
+            model.addAttribute("chybaFormulare", e.getMessage());
             return "pacienti";
         }
     }

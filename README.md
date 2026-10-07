@@ -218,3 +218,13 @@ docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn
     - Vytvořeno ergonomické webové UI (`pacienti.html`, `style.css`) s okamžitým telefonním vyhledávačem a přehledným zápisem nového pacienta.
     - Připraven `Dockerfile` (multi-stage) a `docker-compose.yml` s healthcheckem pro PostgreSQL.
     - Implementována sada unit a integračních testů (`PacientServiceTest`, `PacientRestControllerTest`).
+
+- **2026-10-07:**
+  - **Zabezpečení a validace formuláře pacienta (klientská i serverová vrstva):**
+    - Implementována doménová a prezentační validace českého rodného čísla / čísla pojištěnce (`RodneCisloValidator`, `@ValidRodneCislo`, `@ValidPacient`).
+    - Zahrnuta kontrola formátu (9 číslic do 1953, 10 číslic od 1954), platnosti kalendářního data (měsíc pro muže 1–12, ženy 51–62, přestupné roky) a kontrolního součtu modulo 11.
+    - Zavedena křížová validace souladu roku narození s rodným číslem (zamezení rozporů v kartě pacienta).
+    - Doplněna validační pravidla pro jméno, příjmení (pouze písmena, min. 2 znaky), telefon a kód zdravotní pojišťovny.
+    - Vytvořen klientský asistenční skript `patient-form.js` pro paní Věru (automatické doplňování lomítka, okamžitá vizuální indikace chyb a blokace odeslání nevalidního formuláře).
+    - Aktualizovány testy `PacientServiceTest` a `PacientRestControllerTest` o testovací scénáře odmítnutí chybných údajů (HTTP 400 Bad Request, BusinessRuleException).
+

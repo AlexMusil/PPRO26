@@ -40,7 +40,7 @@ class PacientRestControllerTest {
     void testGetPacienti() throws Exception {
         PacientResponseDto dto = new PacientResponseDto(
                 UUID.randomUUID(), "Marie", "Nováková", 1980,
-                "+420 777 123 456", "805212/1234", "111", null, LocalDateTime.now()
+                "+420 777 123 456", "805212/1231", "111", null, LocalDateTime.now()
         );
         when(pacientService.searchPacienti(null)).thenReturn(List.of(dto));
 
@@ -48,18 +48,19 @@ class PacientRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].jmeno").value("Marie"))
                 .andExpect(jsonPath("$[0].prijmeni").value("Nováková"))
-                .andExpect(jsonPath("$[0].cisloPojistence").value("805212/1234"));
+                .andExpect(jsonPath("$[0].cisloPojistence").value("805212/1231"));
     }
 
     @Test
-    @DisplayName("POST /api/pacienti úspěšně vytvoří pacienta (HTTP 201)")
+    @DisplayName("POST /api/pacienti úspěšně vytvoří pacienta s platným RČ (HTTP 201)")
     void testCreatePacient_Success() throws Exception {
+        // Platné rodné číslo Jana Nováka: 900101/1239 (9001011239 % 11 == 0)
         PacientCreateDto createDto = new PacientCreateDto(
-                "Jan", "Novák", 1990, "+420 777 000 111", "900101/1234", "111", null
+                "Jan", "Novák", 1990, "+420 777 000 111", "900101/1239", "111", null
         );
         PacientResponseDto responseDto = new PacientResponseDto(
                 UUID.randomUUID(), "Jan", "Novák", 1990,
-                "+420 777 000 111", "900101/1234", "111", null, LocalDateTime.now()
+                "+420 777 000 111", "900101/1239", "111", null, LocalDateTime.now()
         );
         when(pacientService.createPacient(any())).thenReturn(responseDto);
 
@@ -72,10 +73,42 @@ class PacientRestControllerTest {
     }
 
     @Test
+    @DisplayName("POST /api/pacienti s neplatným rodným číslem vrací HTTP 400 Bad Request")
+    void testCreatePacient_InvalidRodneCislo_ReturnsBadRequest() throws Exception {
+        // "12345" není platné rodné číslo
+        PacientCreateDto invalidDto = new PacientCreateDto(
+                "Jan", "Novák", 1990, "+420 777 000 111", "12345", "111", null
+        );
+
+        mockMvc.perform(post("/api/pacienti")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.errors.cisloPojistence").exists());
+    }
+
+    @Test
+    @DisplayName("POST /api/pacienti s nesouladem roku narození vrací HTTP 400 Bad Request")
+    void testCreatePacient_MismatchedRokNarozeni_ReturnsBadRequest() throws Exception {
+        // RČ odpovídá roku 1990, ale rokNarozeni je 1985
+        PacientCreateDto invalidDto = new PacientCreateDto(
+                "Jan", "Novák", 1985, "+420 777 000 111", "900101/1239", "111", null
+        );
+
+        mockMvc.perform(post("/api/pacienti")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.errors.rokNarozeni").exists());
+    }
+
+    @Test
     @DisplayName("POST /api/pacienti při duplicitě vrací HTTP 409 Conflict")
     void testCreatePacient_Duplicate() throws Exception {
         PacientCreateDto createDto = new PacientCreateDto(
-                "Jan", "Novák", 1990, "+420 777 000 111", "900101/1234", "111", null
+                "Jan", "Novák", 1990, "+420 777 000 111", "900101/1239", "111", null
         );
         when(pacientService.createPacient(any()))
                 .thenThrow(new DuplicateEntityException("Pacient s číslem pojištěnce již existuje."));

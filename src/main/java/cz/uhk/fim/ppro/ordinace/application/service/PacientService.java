@@ -4,6 +4,7 @@ import cz.uhk.fim.ppro.ordinace.application.exception.BusinessRuleException;
 import cz.uhk.fim.ppro.ordinace.application.exception.DuplicateEntityException;
 import cz.uhk.fim.ppro.ordinace.application.exception.EntityNotFoundException;
 import cz.uhk.fim.ppro.ordinace.application.model.Pacient;
+import cz.uhk.fim.ppro.ordinace.application.validation.RodneCisloValidator;
 import cz.uhk.fim.ppro.ordinace.infrastructure.repository.PacientRepository;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.PacientCreateDto;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.PacientResponseDto;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  * Aplikační služba pro správu pacientů.
- * Implementuje doménová pravidla klienta (ochrana před duplicitami, zákaz mazání historie).
+ * Implementuje doménová pravidla klienta (ochrana před duplicitami, validace rodného čísla, zákaz mazání historie).
  */
 @Service
 @Transactional(readOnly = true)
@@ -53,14 +54,26 @@ public class PacientService {
 
     @Transactional
     public PacientResponseDto createPacient(PacientCreateDto dto) {
-        String cleanCisloPojistence = dto.getCisloPojistence().trim().replaceAll("\\s+", "");
-        String cleanTelefon = dto.getTelefon().trim();
-        String cleanJmeno = dto.getJmeno().trim();
-        String cleanPrijmeni = dto.getPrijmeni().trim();
+        String cleanCisloPojistence = dto.getCisloPojistence() != null ? dto.getCisloPojistence().trim().replaceAll("\\s+", "") : "";
+        String cleanTelefon = dto.getTelefon() != null ? dto.getTelefon().trim() : "";
+        String cleanJmeno = dto.getJmeno() != null ? dto.getJmeno().trim() : "";
+        String cleanPrijmeni = dto.getPrijmeni() != null ? dto.getPrijmeni().trim() : "";
+
+        // Doménová validace platnosti rodného čísla (formát, kalendářní datum, modulo 11)
+        if (!RodneCisloValidator.isValid(cleanCisloPojistence)) {
+            throw new BusinessRuleException("Číslo pojištěnce '" + cleanCisloPojistence + "' není platné české rodné číslo (neodpovídá formátu, datu nebo kontrolnímu součtu).");
+        }
+
+        // Kontrola souladu roku narození s rodným číslem
+        if (dto.getRokNarozeni() != null && !RodneCisloValidator.matchesBirthYear(cleanCisloPojistence, dto.getRokNarozeni())) {
+            throw new BusinessRuleException("Rok narození (" + dto.getRokNarozeni() + ") neodpovídá roku uvedenému v rodném čísle '" + cleanCisloPojistence + "'.");
+        }
+
+        String formattedRc = RodneCisloValidator.format(cleanCisloPojistence);
 
         // Pravidlo #4: Unikátnost čísla pojištěnce (rodného čísla)
-        if (pacientRepository.existsByCisloPojistence(cleanCisloPojistence)) {
-            throw new DuplicateEntityException("Pacient s číslem pojištěnce '" + cleanCisloPojistence + "' již v evidenci existuje.");
+        if (pacientRepository.existsByCisloPojistence(formattedRc)) {
+            throw new DuplicateEntityException("Pacient s číslem pojištěnce '" + formattedRc + "' již v evidenci existuje.");
         }
 
         // Pravidlo #4: Detekce duplicitního zápisu téže osoby se shodným telefonem
@@ -74,8 +87,8 @@ public class PacientService {
                 cleanPrijmeni,
                 dto.getRokNarozeni(),
                 cleanTelefon,
-                cleanCisloPojistence,
-                dto.getPojistovna().trim(),
+                formattedRc,
+                dto.getPojistovna() != null ? dto.getPojistovna().trim() : "",
                 dto.getPoznamka() != null ? dto.getPoznamka().trim() : null
         );
 

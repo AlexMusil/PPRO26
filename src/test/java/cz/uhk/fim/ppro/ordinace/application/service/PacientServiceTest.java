@@ -34,21 +34,22 @@ class PacientServiceTest {
 
     @BeforeEach
     void setUp() {
+        // Platné rodné číslo Marie Novákové narozené 12. 2. 1980 (kontrolní součet modulo 11: 8052121231 % 11 == 0)
         validDto = new PacientCreateDto(
                 "Marie",
                 "Nováková",
                 1980,
                 "+420 777 123 456",
-                "805212/1234",
+                "805212/1231",
                 "111",
                 "Pravidelný pacient"
         );
     }
 
     @Test
-    @DisplayName("Úspěšné vytvoření pacienta")
+    @DisplayName("Úspěšné vytvoření pacienta s platným rodným číslem")
     void testCreatePacient_Success() {
-        when(pacientRepository.existsByCisloPojistence("805212/1234")).thenReturn(false);
+        when(pacientRepository.existsByCisloPojistence("805212/1231")).thenReturn(false);
         when(pacientRepository.existsByJmenoIgnoreCaseAndPrijmeniIgnoreCaseAndTelefon("Marie", "Nováková", "+420 777 123 456")).thenReturn(false);
         when(pacientRepository.save(any(Pacient.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -57,14 +58,61 @@ class PacientServiceTest {
         assertNotNull(result);
         assertEquals("Marie", result.getJmeno());
         assertEquals("Nováková", result.getPrijmeni());
-        assertEquals("805212/1234", result.getCisloPojistence());
+        assertEquals("805212/1231", result.getCisloPojistence());
         verify(pacientRepository, times(1)).save(any(Pacient.class));
+    }
+
+    @Test
+    @DisplayName("Odmítnutí neplatného formátu rodného čísla")
+    void testCreatePacient_InvalidRodneCisloFormat() {
+        PacientCreateDto invalidDto = new PacientCreateDto(
+                "Petr", "Novák", 1980, "+420 777 111 222", "12345", "111", null
+        );
+
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class, () -> {
+            pacientService.createPacient(invalidDto);
+        });
+
+        assertTrue(ex.getMessage().contains("není platné české rodné číslo"));
+        verify(pacientRepository, never()).save(any(Pacient.class));
+    }
+
+    @Test
+    @DisplayName("Odmítnutí rodného čísla s neplatným kontrolním součtem modulo 11")
+    void testCreatePacient_InvalidRodneCisloChecksum() {
+        // 805212/1234 není dělitelné 11
+        PacientCreateDto invalidDto = new PacientCreateDto(
+                "Marie", "Nováková", 1980, "+420 777 123 456", "805212/1234", "111", null
+        );
+
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class, () -> {
+            pacientService.createPacient(invalidDto);
+        });
+
+        assertTrue(ex.getMessage().contains("není platné české rodné číslo"));
+        verify(pacientRepository, never()).save(any(Pacient.class));
+    }
+
+    @Test
+    @DisplayName("Odmítnutí rodného čísla v nesouladu se zadaným rokem narození")
+    void testCreatePacient_MismatchedRokNarozeni() {
+        // RČ odpovídá roku 1980, ale rok narození je 1995
+        PacientCreateDto mismatchedDto = new PacientCreateDto(
+                "Marie", "Nováková", 1995, "+420 777 123 456", "805212/1231", "111", null
+        );
+
+        BusinessRuleException ex = assertThrows(BusinessRuleException.class, () -> {
+            pacientService.createPacient(mismatchedDto);
+        });
+
+        assertTrue(ex.getMessage().contains("neodpovídá roku uvedenému v rodném čísle"));
+        verify(pacientRepository, never()).save(any(Pacient.class));
     }
 
     @Test
     @DisplayName("Zabránění duplicitě čísla pojištěnce (Pravidlo #4)")
     void testCreatePacient_DuplicateCisloPojistence() {
-        when(pacientRepository.existsByCisloPojistence("805212/1234")).thenReturn(true);
+        when(pacientRepository.existsByCisloPojistence("805212/1231")).thenReturn(true);
 
         DuplicateEntityException ex = assertThrows(DuplicateEntityException.class, () -> {
             pacientService.createPacient(validDto);
@@ -77,7 +125,7 @@ class PacientServiceTest {
     @Test
     @DisplayName("Zabránění duplicitnímu zápisu téže osoby se shodným telefonem (Pravidlo #4)")
     void testCreatePacient_DuplicateNameAndPhone() {
-        when(pacientRepository.existsByCisloPojistence("805212/1234")).thenReturn(false);
+        when(pacientRepository.existsByCisloPojistence("805212/1231")).thenReturn(false);
         when(pacientRepository.existsByJmenoIgnoreCaseAndPrijmeniIgnoreCaseAndTelefon("Marie", "Nováková", "+420 777 123 456")).thenReturn(true);
 
         DuplicateEntityException ex = assertThrows(DuplicateEntityException.class, () -> {
@@ -104,7 +152,7 @@ class PacientServiceTest {
     @Test
     @DisplayName("Vyhledávání pacientů podle dotazu")
     void testSearchPacienti() {
-        Pacient pacient = new Pacient(UUID.randomUUID(), "Marie", "Nováková", 1980, "+420 777 123 456", "805212/1234", "111", null);
+        Pacient pacient = new Pacient(UUID.randomUUID(), "Marie", "Nováková", 1980, "+420 777 123 456", "805212/1231", "111", null);
         when(pacientRepository.searchPacienti("Nováková")).thenReturn(List.of(pacient));
 
         List<PacientResponseDto> results = pacientService.searchPacienti("Nováková");
