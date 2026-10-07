@@ -7,10 +7,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Doménová entita reprezentující pacienta v evidenci Ordinace Na Vyhlídce.
- * Zodpovídá požadavku klienta #1 a invariantu nemazatelnosti historie.
- */
 @Entity
 @Table(name = "pacient")
 public class Pacient {

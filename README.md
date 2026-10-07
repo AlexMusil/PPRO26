@@ -10,13 +10,13 @@
 ## 1. Kontext a výchozí stav klienta
 
 ### O klientovi
-Soukromá praxe *Ordinace Na Vyhlídce*. V ordinaci působí tři lékaři na částečné úvazky a paní Věra na recepci. V evidenci je přibližně 900 pacientů, z nichž zhruba polovina dochází pravidelně.
+Soukromá praxe *Ordinace Na Vyhlídce*. V ordinaci působí tři lékaři na částečné úvazky a recepční. V evidenci je přibližně 900 pacientů, z nichž zhruba polovina dochází pravidelně.
 
 ### Jak to v ordinaci funguje dnes
 - Na recepci se používá papírový diář, do kterého se termíny zapisují obyčejnou tužkou.
-- Když pacient volá, recepční paní Věra zdlouhavě hledá volné okno listováním v sešitě.
+- Když pacient volá, recepční zdlouhavě hledá volné okno listováním v sešitě.
 - Pokud lékař náhle onemocní, celý seznam dotčených pacientů se musí obvolávat z poznámek.
-- Na konci každého měsíce paní Věra ručně přepisuje provedené výkony do tabulky pro zdravotní pojišťovny – tato neefektivní agenda jí zabere pokaždé celý podvečer.
+- Na konci každého měsíce recepce ručně přepisuje provedené výkony do tabulky pro zdravotní pojišťovny – tato agenda zabere pokaždé spoustu času.
 - Za poslední rok se dvakrát stalo, že byli na stejný čas omylem objednáni dva pacienti ke stejnému lékaři, což vedlo k nepříjemným situacím v čekárně.
 
 ---
@@ -39,7 +39,7 @@ Soukromá praxe *Ordinace Na Vyhlídce*. V ordinaci působí tři lékaři na č
 - **Trvalá historie (nemazatelnost):** Historie pacienta a proběhlých návštěv se fyzicky nemaže kvůli právní doložitelnosti poskytnuté péče.
 
 ### 2.3 Co klient prohodil mimochodem (Nároky na UX a rozšiřitelnost)
-- *„Musí to zvládnout paní Věra, ta s počítačem moc nekamarádí.“* $\to$ Rozhraní musí být maximálně přehledné, bez zbytečných kliků navíc, s velkými a srozumitelnými ovládacími prvky.
+- *„Musí to zvládnout běžná obsluha.“* $\to$ Rozhraní musí být maximálně přehledné, bez zbytečných kliků navíc, s velkými a srozumitelnými ovládacími prvky.
 - *„Když zvoní telefon, nemůžu čekat, až se to načte.“* $\to$ Okamžitá odezva vyhledávání pacientů (debounce vyhledávání, indexy v DB).
 - *„Bylo by hezké, kdybych to viděla i na tabletu, ale to nespěchá.“* $\to$ Responzivní webové rozhraní přizpůsobené i pro dotykové obrazovky.
 - *„Pacienti by se možná mohli objednávat sami přes internet, ale bojím se toho.“* $\to$ Architektura a API musí být navrženy tak, aby umožnily budoucí napojení pacientského samoobslužného portálu bez nutnosti refaktoringu jádra systému.
@@ -53,10 +53,11 @@ Následující tabulka dokumentuje rozhodnutí ke všem otevřeným bodům speci
 | # | Otevřený bod klienta | Přijaté rozhodnutí a technické řešení | Zdůvodnění |
 |---|----------------------|---------------------------------------|------------|
 | **1** | **Délka jednoho termínu** (*„podle toho, co se dělá“ vs. mřížka*) | Zavedena pevná časová mřížka s krokem **15 minut** (základní slot). Rezervace má počáteční čas a délku danou celočíselným násobkem základního slotu (15, 30, 45, 60 minut). Typ vyšetření předvyplní doporučenou délku. | Umožňuje zachovat přehledný vizuální kalendář pro recepci (mřížku) a zároveň flexibilitu pro komplexnější zákroky. |
-| **2** | **Kdo zakládá rezervaci** (*recepce vs. pacienti přes internet*) | V 1. fázi je zápis umožněn **výhradně recepci (paní Věře)**. Systém je však postaven na modulární třívrstvé architektuře s autorizovaným REST API. | Paní Věra neztratí kontrolu nad diářem a eliminují se obavy lékařky. Budoucí zapojení pacientského portálu bude pouze novým klientem téhož API. |
+| **2** | **Kdo zakládá rezervaci** (*recepce vs. pacienti přes internet*) | V 1. fázi je zápis umožněn **výhradně recepci**. Systém je však postaven na modulární třívrstvé architektuře s autorizovaným REST API. | Recepce neztratí kontrolu nad diářem a eliminují se obavy lékařky. Budoucí zapojení pacientského portálu bude pouze novým klientem téhož API. |
 | **3** | **Co se zrušenou rezervací** (*odstranění z diáře vs. statistika nespolehlivých*) | Implementován stavový automat rezervace (`PLANOVANA`, `PROBEHLA`, `ZRUSENA_PACIENTEM`, `ZRUSENA_LEKAREM`). Zrušená rezervace **uvolní časový slot v kalendáři**, ale její záznam zůstává v DB s časovým razítkem a důvodem. | Kalendář zůstává čistý a volný pro nové pacienty, zatímco systém dokáže okamžitě spočítat a zobrazit statistiku častých rušení pacienta. |
 | **4** | **Totožnost pacienta a duplicity** (*paní Nováková je v diáři 3x*) | Primárním unikátním identifikátorem pacienta je **číslo pojištěnce (rodné číslo)**. Při zadávání jména a telefonu systém provádí našeptávání a varuje před vznikem duplicit. | Zamezí se vícenásobné registraci stejného člověka pod mírně odlišným zápisem jména, což je klíčové pro správné vykazování pojišťovnám. |
-| **5** | **Nemoc lékaře** (*jak postupovat při výpadku*) | Funkce **„Nahlásit nepřítomnost lékaře“** pro vybraný interval. Systém automaticky převede všechny kolidující rezervace do stavu `K_PREOBJEDNANI` a vytvoří přehledný pracovní frontový seznam (Call-list) pro paní Věru. | Nemoc nelze řešit plnou automatizací, protože pacienti vyžadují lidský přístup a domluvu náhradního termínu; paní Věra však dostane přesný seznam koho a kdy kontaktovat. |
+| **5** | **Nemoc lékaře** (*jak postupovat při výpadku*) | Funkce **„Nahlásit nepřítomnost lékaře“** pro vybraný interval. Systém automaticky převede všechny kolidující rezervace do stavu `K_PREOBJEDNANI` a vytvoří přehledný pracovní frontový seznam (Call-list) pro recepci. | Nemoc nelze řešit plnou automatizací, protože pacienti vyžadují lidský přístup a domluvu náhradního termínu; obsluha však dostane přesný seznam koho a kdy kontaktovat. |
+
 
 ---
 
@@ -160,7 +161,7 @@ erDiagram
 - **Framework:** Spring Boot 3.3.4 (Spring Web, Spring Data JPA, Bean Validation, Thymeleaf)
 - **Relační databáze:** PostgreSQL 16 (v Docker kontejneru)
 - **Databázové migrace:** Flyway (verzované SQL migrace v `src/main/resources/db/migration`)
-- **Prezentační vrstva:** Thymeleaf + moderní Vanilla CSS (optimalizováno pro ergonomii recepce) & REST API
+- **Prezentační vrstva:** Thymeleaf + Vanilla CSS & REST API
 - **Testování:** JUnit 5, Mockito (unit testy byznys logiky), MockMvc & H2 (integrační testy kontrolerů)
 - **Kontejnerizace:** Multi-stage Dockerfile a Docker Compose
 
@@ -192,8 +193,8 @@ docker compose up --build
 ```
 
 Po spuštění je systém dostupný na adresách:
-- **Webové rozhraní pro recepci (paní Věru):** [http://localhost:8080](http://localhost:8080)
-- **REST API pro integrace:** [http://localhost:8080/api/pacienti](http://localhost:8080/api/pacienti)
+- **Webové rozhraní:** [http://localhost:8080](http://localhost:8080)
+- **REST API:** [http://localhost:8080/api/pacienti](http://localhost:8080/api/pacienti)
 
 ### Spuštění testů
 Unit a integrační testy ověřují správné chování vyhledávání, detekci duplicit a zákaz mazání historie pacienta:
@@ -215,7 +216,7 @@ docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn
     - Implementována třívrstvá architektura (`presentation` $\to$ `application` $\to$ `infrastructure`).
     - Vytvořena migrace `V1__create_pacient_table.sql` a seed skript `V2__seed_pacienti.sql` s 10 syntetickými záznamy pacientů (včetně případů z příběhu klienta: paní Nováková, paní Krátká).
     - Implementována doménová pravidla v `PacientService`: ochrana před duplicitami (unikátní rodné číslo / číslo pojištěnce, shoda jméno + telefon), striktní zákaz mazání historie pacienta (`BusinessRuleException`).
-    - Vytvořeno ergonomické webové UI (`pacienti.html`, `style.css`) s okamžitým telefonním vyhledávačem a přehledným zápisem nového pacienta.
+    - Vytvořeno webové UI (`pacienti.html`, `style.css`) s vyhledávačem a zápisem nového pacienta.
     - Připraven `Dockerfile` (multi-stage) a `docker-compose.yml` s healthcheckem pro PostgreSQL.
     - Implementována sada unit a integračních testů (`PacientServiceTest`, `PacientRestControllerTest`).
 
@@ -225,6 +226,7 @@ docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn
     - Zahrnuta kontrola formátu (9 číslic do 1953, 10 číslic od 1954), platnosti kalendářního data (měsíc pro muže 1–12, ženy 51–62, přestupné roky) a kontrolního součtu modulo 11.
     - Zavedena křížová validace souladu roku narození s rodným číslem (zamezení rozporů v kartě pacienta).
     - Doplněna validační pravidla pro jméno, příjmení (pouze písmena, min. 2 znaky), telefon a kód zdravotní pojišťovny.
-    - Vytvořen klientský asistenční skript `patient-form.js` pro paní Věru (automatické doplňování lomítka, okamžitá vizuální indikace chyb a blokace odeslání nevalidního formuláře).
+    - Vytvořen klientský skript `patient-form.js` (automatické doplňování lomítka, okamžitá vizuální indikace chyb a blokace odeslání nevalidního formuláře).
     - Aktualizovány testy `PacientServiceTest` a `PacientRestControllerTest` o testovací scénáře odmítnutí chybných údajů (HTTP 400 Bad Request, BusinessRuleException).
+    - Vyčištění uživatelského rozhraní a zdrojových kódů od vývojových a meta poznámek pro čisté produkční zobrazení.
 

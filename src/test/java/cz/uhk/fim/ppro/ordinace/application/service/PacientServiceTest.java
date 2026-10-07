@@ -34,7 +34,6 @@ class PacientServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Platné rodné číslo Marie Novákové narozené 12. 2. 1980 (kontrolní součet modulo 11: 8052121231 % 11 == 0)
         validDto = new PacientCreateDto(
                 "Marie",
                 "Nováková",
@@ -47,7 +46,7 @@ class PacientServiceTest {
     }
 
     @Test
-    @DisplayName("Úspěšné vytvoření pacienta s platným rodným číslem")
+    @DisplayName("Úspěšné vytvoření pacienta")
     void testCreatePacient_Success() {
         when(pacientRepository.existsByCisloPojistence("805212/1231")).thenReturn(false);
         when(pacientRepository.existsByJmenoIgnoreCaseAndPrijmeniIgnoreCaseAndTelefon("Marie", "Nováková", "+420 777 123 456")).thenReturn(false);
@@ -73,14 +72,13 @@ class PacientServiceTest {
             pacientService.createPacient(invalidDto);
         });
 
-        assertTrue(ex.getMessage().contains("není platné české rodné číslo"));
+        assertTrue(ex.getMessage().contains("není platné rodné číslo"));
         verify(pacientRepository, never()).save(any(Pacient.class));
     }
 
     @Test
-    @DisplayName("Odmítnutí rodného čísla s neplatným kontrolním součtem modulo 11")
+    @DisplayName("Odmítnutí rodného čísla s neplatným kontrolním součtem")
     void testCreatePacient_InvalidRodneCisloChecksum() {
-        // 805212/1234 není dělitelné 11
         PacientCreateDto invalidDto = new PacientCreateDto(
                 "Marie", "Nováková", 1980, "+420 777 123 456", "805212/1234", "111", null
         );
@@ -89,14 +87,13 @@ class PacientServiceTest {
             pacientService.createPacient(invalidDto);
         });
 
-        assertTrue(ex.getMessage().contains("není platné české rodné číslo"));
+        assertTrue(ex.getMessage().contains("není platné rodné číslo"));
         verify(pacientRepository, never()).save(any(Pacient.class));
     }
 
     @Test
-    @DisplayName("Odmítnutí rodného čísla v nesouladu se zadaným rokem narození")
+    @DisplayName("Odmítnutí rodného čísla v nesouladu s rokem narození")
     void testCreatePacient_MismatchedRokNarozeni() {
-        // RČ odpovídá roku 1980, ale rok narození je 1995
         PacientCreateDto mismatchedDto = new PacientCreateDto(
                 "Marie", "Nováková", 1995, "+420 777 123 456", "805212/1231", "111", null
         );
@@ -105,12 +102,12 @@ class PacientServiceTest {
             pacientService.createPacient(mismatchedDto);
         });
 
-        assertTrue(ex.getMessage().contains("neodpovídá roku uvedenému v rodném čísle"));
+        assertTrue(ex.getMessage().contains("neodpovídá rodnému číslu"));
         verify(pacientRepository, never()).save(any(Pacient.class));
     }
 
     @Test
-    @DisplayName("Zabránění duplicitě čísla pojištěnce (Pravidlo #4)")
+    @DisplayName("Zabránění duplicitě čísla pojištěnce")
     void testCreatePacient_DuplicateCisloPojistence() {
         when(pacientRepository.existsByCisloPojistence("805212/1231")).thenReturn(true);
 
@@ -123,7 +120,7 @@ class PacientServiceTest {
     }
 
     @Test
-    @DisplayName("Zabránění duplicitnímu zápisu téže osoby se shodným telefonem (Pravidlo #4)")
+    @DisplayName("Zabránění duplicitnímu zápisu téže osoby se shodným telefonem")
     void testCreatePacient_DuplicateNameAndPhone() {
         when(pacientRepository.existsByCisloPojistence("805212/1231")).thenReturn(false);
         when(pacientRepository.existsByJmenoIgnoreCaseAndPrijmeniIgnoreCaseAndTelefon("Marie", "Nováková", "+420 777 123 456")).thenReturn(true);
@@ -132,12 +129,12 @@ class PacientServiceTest {
             pacientService.createPacient(validDto);
         });
 
-        assertTrue(ex.getMessage().contains("se shodným jménem"));
+        assertTrue(ex.getMessage().contains("se jménem"));
         verify(pacientRepository, never()).save(any(Pacient.class));
     }
 
     @Test
-    @DisplayName("Pravidlo klienta: Nemazatelnost historie pacienta")
+    @DisplayName("Zákaz smazání záznamu pacienta")
     void testDeletePacient_ThrowsBusinessRuleException() {
         UUID id = UUID.randomUUID();
 
@@ -145,7 +142,7 @@ class PacientServiceTest {
             pacientService.deletePacient(id);
         });
 
-        assertTrue(ex.getMessage().contains("Smazání pacienta je zakázáno"));
+        assertTrue(ex.getMessage().contains("nelze smazat"));
         verify(pacientRepository, never()).deleteById(any());
     }
 

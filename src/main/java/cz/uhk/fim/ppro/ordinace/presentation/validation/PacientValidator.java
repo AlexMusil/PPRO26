@@ -5,10 +5,6 @@ import cz.uhk.fim.ppro.ordinace.presentation.dto.PacientCreateDto;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-/**
- * Třídní validátor pro křížovou kontrolu údajů v formuláři pacienta.
- * Kontroluje zejména shodu roku narození s rodným číslem pacienta.
- */
 public class PacientValidator implements ConstraintValidator<ValidPacient, PacientCreateDto> {
 
     @Override

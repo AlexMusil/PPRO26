@@ -15,10 +15,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Aplikační služba pro správu pacientů.
- * Implementuje doménová pravidla klienta (ochrana před duplicitami, validace rodného čísla, zákaz mazání historie).
- */
 @Service
 @Transactional(readOnly = true)
 public class PacientService {
@@ -59,26 +55,22 @@ public class PacientService {
         String cleanJmeno = dto.getJmeno() != null ? dto.getJmeno().trim() : "";
         String cleanPrijmeni = dto.getPrijmeni() != null ? dto.getPrijmeni().trim() : "";
 
-        // Doménová validace platnosti rodného čísla (formát, kalendářní datum, modulo 11)
         if (!RodneCisloValidator.isValid(cleanCisloPojistence)) {
-            throw new BusinessRuleException("Číslo pojištěnce '" + cleanCisloPojistence + "' není platné české rodné číslo (neodpovídá formátu, datu nebo kontrolnímu součtu).");
+            throw new BusinessRuleException("Číslo pojištěnce '" + cleanCisloPojistence + "' není platné rodné číslo.");
         }
 
-        // Kontrola souladu roku narození s rodným číslem
         if (dto.getRokNarozeni() != null && !RodneCisloValidator.matchesBirthYear(cleanCisloPojistence, dto.getRokNarozeni())) {
-            throw new BusinessRuleException("Rok narození (" + dto.getRokNarozeni() + ") neodpovídá roku uvedenému v rodném čísle '" + cleanCisloPojistence + "'.");
+            throw new BusinessRuleException("Rok narození (" + dto.getRokNarozeni() + ") neodpovídá rodnému číslu '" + cleanCisloPojistence + "'.");
         }
 
         String formattedRc = RodneCisloValidator.format(cleanCisloPojistence);
 
-        // Pravidlo #4: Unikátnost čísla pojištěnce (rodného čísla)
         if (pacientRepository.existsByCisloPojistence(formattedRc)) {
             throw new DuplicateEntityException("Pacient s číslem pojištěnce '" + formattedRc + "' již v evidenci existuje.");
         }
 
-        // Pravidlo #4: Detekce duplicitního zápisu téže osoby se shodným telefonem
         if (pacientRepository.existsByJmenoIgnoreCaseAndPrijmeniIgnoreCaseAndTelefon(cleanJmeno, cleanPrijmeni, cleanTelefon)) {
-            throw new DuplicateEntityException("Pacient se shodným jménem '" + cleanJmeno + " " + cleanPrijmeni + "' a telefonním číslem již v evidenci existuje.");
+            throw new DuplicateEntityException("Pacient se jménem '" + cleanJmeno + " " + cleanPrijmeni + "' a telefonním číslem již existuje.");
         }
 
         Pacient pacient = new Pacient(
@@ -96,10 +88,7 @@ public class PacientService {
         return PacientResponseDto.fromEntity(saved);
     }
 
-    /**
-     * Klientovo striktní pravidlo: „Historie pacienta se nemaže. Když se něco stane, musím doložit, co jsme kdy dělali.“
-     */
     public void deletePacient(UUID id) {
-        throw new BusinessRuleException("Smazání pacienta je zakázáno. Podle platných lékařských pravidel a zadání klienta se historie nesmí fyzicky odstraňovat.");
+        throw new BusinessRuleException("Záznam pacienta nelze smazat.");
     }
 }

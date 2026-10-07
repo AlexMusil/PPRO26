@@ -1,12 +1,3 @@
-/**
- * Klientská validace a UX asistenty pro formulář pacienta.
- * Zajišťuje ergonomii pro recepční paní Věru:
- * 1. Automatické formátování rodného čísla (vložení lomítka).
- * 2. Okamžitá kontrola platnosti rodného čísla (formát, datum, modulo 11).
- * 3. Křížová kontrola souladu roku narození a rodného čísla.
- * 4. Kontrola jména, příjmení a telefonního čísla.
- * 5. Zamezení odeslání chybného formuláře.
- */
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('patientForm');
     if (!form) return;
