@@ -122,3 +122,4 @@ class RezervaceRestControllerTest {
                 .andExpect(jsonPath("$[0].stav").value("K_PREOBJEDNANI"));
     }
 }
+

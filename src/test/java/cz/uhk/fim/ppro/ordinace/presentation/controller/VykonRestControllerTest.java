@@ -37,3 +37,4 @@ class VykonRestControllerTest {
                 .andExpect(jsonPath("$[0].body").value(280));
     }
 }
+

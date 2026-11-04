@@ -30,3 +30,4 @@ public class VykonRestController {
         return ResponseEntity.ok(vykonService.getVykonByKod(kod));
     }
 }
+

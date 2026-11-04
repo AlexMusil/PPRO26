@@ -55,3 +55,4 @@ public class LekarService {
         return ordinacniDobaRepository.findByLekarIdOrderByDenVTydnuAscCasOdAsc(lekarId);
     }
 }
+

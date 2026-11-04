@@ -80,3 +80,4 @@ public class VykazMesicniDto {
         this.polozky = polozky;
     }
 }
+

@@ -85,3 +85,4 @@ public class LekarDto {
         this.aktivni = aktivni;
     }
 }
+

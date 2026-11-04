@@ -72,3 +72,4 @@ class VykazServiceTest {
         assertEquals(2, vykaz.getPolozky().size());
     }
 }
+

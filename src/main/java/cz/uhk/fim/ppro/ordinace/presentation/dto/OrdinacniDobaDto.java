@@ -117,3 +117,4 @@ public class OrdinacniDobaDto {
         this.poznamka = poznamka;
     }
 }
+

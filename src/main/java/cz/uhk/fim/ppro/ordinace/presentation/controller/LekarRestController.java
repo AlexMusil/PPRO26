@@ -34,3 +34,4 @@ public class LekarRestController {
         return ResponseEntity.ok(lekarService.getOrdinacniDobyByLekar(id));
     }
 }
+

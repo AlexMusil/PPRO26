@@ -106,3 +106,4 @@ public class NavstevaVykon {
         return Objects.hash(id);
     }
 }
+

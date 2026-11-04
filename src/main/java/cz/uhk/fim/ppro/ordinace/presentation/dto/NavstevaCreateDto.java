@@ -75,3 +75,4 @@ public class NavstevaCreateDto {
         this.vykony = vykony;
     }
 }
+

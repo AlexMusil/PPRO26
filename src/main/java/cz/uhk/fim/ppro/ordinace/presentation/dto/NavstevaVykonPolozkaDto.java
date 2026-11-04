@@ -48,3 +48,4 @@ public class NavstevaVykonPolozkaDto {
         this.poznamka = poznamka;
     }
 }
+

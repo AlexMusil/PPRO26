@@ -121,3 +121,4 @@ public class Navsteva {
         return Objects.hash(id);
     }
 }
+

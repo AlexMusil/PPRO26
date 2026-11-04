@@ -33,3 +33,4 @@ public class VykazRestController {
         return ResponseEntity.ok(vykazService.generujMesicniVykaz(r, m, lekarId));
     }
 }
+

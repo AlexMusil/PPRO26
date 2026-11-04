@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Karta pacienta: ' + ${pacient.prijmeni + ' ' + pacient.jmeno} + ' | Ordinace Na Vyhlídce'">Karta pacienta | Ordinace Na Vyhlídce</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: header('pacienti')}"></header>
+
+    <div class="container">
+
+        <!-- Karta pacienta -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <h2 class="card-title" style="font-size: 1.4rem;">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    Karta pacienta: <span th:text="${pacient.prijmeni + ' ' + pacient.jmeno}">Nováková Marie</span>
+                </h2>
+                <div style="display: flex; gap: 0.75rem;">
+                    <a th:href="@{/kalendar(pacientId=${pacient.id})}" class="btn btn-primary">
+                        <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        Nová rezervace v kalendáři
+                    </a>
+                    <a th:href="@{/pacienti}" class="btn btn-secondary">&larr; Zpět na seznam</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Číslo pojištěnce (RČ)</div>
+                        <div style="font-size: 1.15rem; font-weight: 700; margin-top: 0.2rem;">
+                            <code th:text="${pacient.cisloPojistence}">685412/1234</code>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Telefonní číslo</div>
+                        <div style="font-size: 1.15rem; font-weight: 700; margin-top: 0.2rem;">
+                            <a th:href="'tel:' + ${pacient.telefon}" style="text-decoration: none; color: var(--primary);" th:text="${pacient.telefon}">+420 777 123 456</a>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Rok narození</div>
+                        <div style="font-size: 1.15rem; font-weight: 700; margin-top: 0.2rem;" th:text="${pacient.rokNarozeni}">1968</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Zdravotní pojišťovna</div>
+                        <div style="margin-top: 0.25rem;">
+                            <span class="badge badge-vzp" th:if="${pacient.pojistovna == '111'}">111 (VZP)</span>
+                            <span class="badge badge-ozp" th:if="${pacient.pojistovna == '207'}">207 (OZP)</span>
+                            <span class="badge badge-zpmv" th:if="${pacient.pojistovna == '211'}">211 (ZPMV)</span>
+                            <span class="badge badge-other" th:if="${pacient.pojistovna != '111' && pacient.pojistovna != '207' && pacient.pojistovna != '211'}" th:text="${pacient.pojistovna}">205</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Spolehlivost docházky</div>
+                        <div style="margin-top: 0.25rem;">
+                            <span th:if="${pacient.pocetZrusenychRezervaci >= 2}" class="badge-status badge-zrusena" th:text="'⚠️ ' + ${pacient.pocetZrusenychRezervaci} + '× zrušeno'">⚠️ 2× zrušeno</span>
+                            <span th:if="${pacient.pocetZrusenychRezervaci == 1}" class="badge-status badge-k-preobjednani" th:text="'1× zrušeno'">1× zrušeno</span>
+                            <span th:if="${pacient.pocetZrusenychRezervaci == 0}" class="badge-status badge-probehla">Spolehlivý pacient (0 zrušení)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${pacient.poznamka != null && !pacient.poznamka.isEmpty()}" style="margin-top: 1.25rem; padding: 0.85rem; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                    <strong style="font-size: 0.88rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Zdravotní poznámka a anamnéza:</strong>
+                    <span th:text="${pacient.poznamka}">Pravidelná kontrola tlaku, alergie na penicilin</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trvalá historie rezervací a návštěv -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Historie rezervací a návštěv v ordinaci
+                    <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted);"
+                          th:text="'(' + ${#lists.size(rezervace)} + ')'">(0)</span>
+                </h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Termín vyšetření</th>
+                                <th>Ošetřující lékař</th>
+                                <th>Důvod návštěvy</th>
+                                <th>Stav</th>
+                                <th>Poznámka / Výsledek</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${rezervace}">
+                                <td>
+                                    <strong th:text="${#temporals.format(r.casOd, 'dd.MM.yyyy HH:mm')}">12.10.2026 08:30</strong>
+                                    <span style="color: var(--text-muted); font-size: 0.82rem; display: block;"
+                                          th:text="${r.delkaMinut + ' min'}">30 min</span>
+                                </td>
+                                <td th:text="${r.lekarJmeno}">MUDr. Jana Hrubá</td>
+                                <td th:text="${r.duvodNavstevy}">Pravidelná kontrola tlaku</td>
+                                <td>
+                                    <span th:class="'badge-status ' + (${r.stav.name() == 'PLANOVANA'} ? 'badge-planovana' : (${r.stav.name() == 'PROBEHLA'} ? 'badge-probehla' : (${r.stav.name() == 'K_PREOBJEDNANI'} ? 'badge-k-preobjednani' : 'badge-zrusena')))"
+                                          th:text="${r.stav.popis}">Proběhlá</span>
+                                </td>
+                                <td>
+                                    <span th:if="${r.stav.name() == 'PROBEHLA'}" style="color: var(--success); font-weight: 600;">
+                                        Vyšetření proběhlo a výkony byly vykázány.
+                                    </span>
+                                    <span th:if="${r.stav.name() == 'ZRUSENA_PACIENTEM' || r.stav.name() == 'ZRUSENA_LEKAREM'}" style="color: var(--danger);" th:text="${r.poznamkaZruseni}">
+                                        Důvod zrušení...
+                                    </span>
+                                    <span th:if="${r.stav.name() == 'K_PREOBJEDNANI'}" style="color: var(--warning);" th:text="${r.poznamkaZruseni}">
+                                        Čeká na přeobjednání
+                                    </span>
+                                    <span th:if="${r.stav.name() == 'PLANOVANA'}" style="color: var(--primary);">
+                                        Plánovaný budoucí termín.
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(rezervace)}">
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                                    Tento pacient zatím nemá žádné zaznamenané rezervace ani proběhlé návštěvy.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

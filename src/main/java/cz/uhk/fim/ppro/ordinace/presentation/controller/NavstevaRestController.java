@@ -42,3 +42,4 @@ public class NavstevaRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }
+

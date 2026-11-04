@@ -59,3 +59,4 @@ public class VykazPolozkaDto {
         this.celkemBodu = celkemBodu;
     }
 }
+

@@ -4,8 +4,10 @@ import cz.uhk.fim.ppro.ordinace.application.exception.BusinessRuleException;
 import cz.uhk.fim.ppro.ordinace.application.exception.DuplicateEntityException;
 import cz.uhk.fim.ppro.ordinace.application.exception.EntityNotFoundException;
 import cz.uhk.fim.ppro.ordinace.application.model.Pacient;
+import cz.uhk.fim.ppro.ordinace.application.model.StavRezervace;
 import cz.uhk.fim.ppro.ordinace.application.validation.RodneCisloValidator;
 import cz.uhk.fim.ppro.ordinace.infrastructure.repository.PacientRepository;
+import cz.uhk.fim.ppro.ordinace.infrastructure.repository.RezervaceRepository;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.PacientCreateDto;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.PacientResponseDto;
 import org.springframework.stereotype.Service;
@@ -20,15 +22,17 @@ import java.util.stream.Collectors;
 public class PacientService {
 
     private final PacientRepository pacientRepository;
+    private final RezervaceRepository rezervaceRepository;
 
-    public PacientService(PacientRepository pacientRepository) {
+    public PacientService(PacientRepository pacientRepository, RezervaceRepository rezervaceRepository) {
         this.pacientRepository = pacientRepository;
+        this.rezervaceRepository = rezervaceRepository;
     }
 
     public List<PacientResponseDto> getAllPacienti() {
         return pacientRepository.findAllByOrderByPrijmeniAscJmenoAsc()
                 .stream()
-                .map(PacientResponseDto::fromEntity)
+                .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -38,14 +42,22 @@ public class PacientService {
         }
         return pacientRepository.searchPacienti(query.trim())
                 .stream()
-                .map(PacientResponseDto::fromEntity)
+                .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
 
     public PacientResponseDto getPacientById(UUID id) {
         return pacientRepository.findById(id)
-                .map(PacientResponseDto::fromEntity)
+                .map(this::mapToResponseDto)
                 .orElseThrow(() -> new EntityNotFoundException("Pacient s ID " + id + " nebyl nalezen."));
+    }
+
+    private PacientResponseDto mapToResponseDto(Pacient p) {
+        long zruseno = 0;
+        if (rezervaceRepository != null) {
+            zruseno = rezervaceRepository.countByPacientIdAndStavIn(p.getId(), List.of(StavRezervace.ZRUSENA_PACIENTEM));
+        }
+        return PacientResponseDto.fromEntity(p, zruseno);
     }
 
     @Transactional

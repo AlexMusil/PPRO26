@@ -68,7 +68,7 @@
                                         <small style="color: var(--danger); display: block;" th:text="${r.poznamkaZruseni}">Nepřítomnost lékaře: Nemoc</small>
                                     </td>
                                     <td>
-                                        <a th:href="@{/kalendar(lekarId=${r.lekarId})}" class="btn btn-primary" style="padding: 0.35rem 0.65rem; font-size: 0.82rem;">
+                                        <a th:href="@{/kalendar(lekarId=${r.lekarId}, pacientId=${r.pacientId})}" class="btn btn-primary" style="padding: 0.35rem 0.65rem; font-size: 0.82rem;">
                                             Přeobjednat v kalendáři
                                         </a>
                                     </td>
@@ -145,3 +145,4 @@
 
 </body>
 </html>
+

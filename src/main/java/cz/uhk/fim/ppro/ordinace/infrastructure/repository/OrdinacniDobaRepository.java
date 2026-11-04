@@ -14,3 +14,4 @@ public interface OrdinacniDobaRepository extends JpaRepository<OrdinacniDoba, UU
 
     List<OrdinacniDoba> findByLekarIdAndDenVTydnu(UUID lekarId, Integer denVTydnu);
 }
+

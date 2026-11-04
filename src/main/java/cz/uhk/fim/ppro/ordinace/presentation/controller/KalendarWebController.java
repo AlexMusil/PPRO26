@@ -39,6 +39,7 @@ public class KalendarWebController {
     @GetMapping
     public String index(
             @RequestParam(required = false) UUID lekarId,
+            @RequestParam(required = false) UUID pacientId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datum,
             Model model) {
 
@@ -79,6 +80,9 @@ public class KalendarWebController {
         if (!model.containsAttribute("novaRezervace")) {
             RezervaceCreateDto dto = new RezervaceCreateDto();
             dto.setLekarId(vybranyLekarId);
+            if (pacientId != null) {
+                dto.setPacientId(pacientId);
+            }
             model.addAttribute("novaRezervace", dto);
         }
 
@@ -134,3 +138,4 @@ public class KalendarWebController {
         return "redirect:/kalendar?lekarId=" + (lekarId != null ? lekarId : "") + (datum != null ? "&datum=" + datum : "");
     }
 }
+

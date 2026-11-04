@@ -112,3 +112,4 @@ class NavstevaServiceTest {
         verify(navstevaRepository, never()).save(any());
     }
 }
+

@@ -98,3 +98,4 @@ public class NavstevaWebController {
         return "redirect:/navstevy";
     }
 }
+

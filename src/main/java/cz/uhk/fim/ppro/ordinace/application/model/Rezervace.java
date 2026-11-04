@@ -176,3 +176,4 @@ public class Rezervace {
         return Objects.hash(id);
     }
 }
+

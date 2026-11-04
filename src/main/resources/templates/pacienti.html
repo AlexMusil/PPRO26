@@ -69,13 +69,16 @@
                                     <th>Číslo pojištěnce (RČ)</th>
                                     <th>Rok nar.</th>
                                     <th>Pojišťovna</th>
-                                    <th>Poznámka</th>
+                                    <th>Spolehlivost</th>
+                                    <th>Akce</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="p : ${pacienti}">
                                     <td>
-                                        <div class="patient-name" th:text="${p.prijmeni + ' ' + p.jmeno}">Nováková Marie</div>
+                                        <div class="patient-name">
+                                            <a th:href="@{/pacienti/{id}(id=${p.id})}" style="text-decoration: none; color: inherit;" th:text="${p.prijmeni + ' ' + p.jmeno}">Nováková Marie</a>
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="patient-phone" th:text="${p.telefon}">+420 777 123 456</span>
@@ -90,10 +93,24 @@
                                         <span class="badge badge-zpmv" th:if="${p.pojistovna == '211'}">211 (ZPMV)</span>
                                         <span class="badge badge-other" th:if="${p.pojistovna != '111' && p.pojistovna != '207' && p.pojistovna != '211'}" th:text="${p.pojistovna}">205</span>
                                     </td>
-                                    <td style="font-size: 0.85rem; color: var(--text-muted);" th:text="${p.poznamka}">Alergie na PNC</td>
+                                    <td>
+                                        <span th:if="${p.pocetZrusenychRezervaci >= 2}" class="badge-status badge-zrusena" title="Pozor: Pacient má více zrušených rezervací!" th:text="'⚠️ ' + ${p.pocetZrusenychRezervaci} + '× zrušeno'">⚠️ 2× zrušeno</span>
+                                        <span th:if="${p.pocetZrusenychRezervaci == 1}" class="badge-status badge-k-preobjednani" style="font-size: 0.75rem;" th:text="'1× zrušeno'">1× zrušeno</span>
+                                        <span th:if="${p.pocetZrusenychRezervaci == 0}" class="badge-status badge-probehla" style="font-size: 0.75rem;">Spolehlivý</span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 0.35rem;">
+                                            <a th:href="@{/kalendar(pacientId=${p.id})}" class="btn btn-primary" style="padding: 0.25rem 0.55rem; font-size: 0.78rem; text-decoration: none;">
+                                                Objednat
+                                            </a>
+                                            <a th:href="@{/pacienti/{id}(id=${p.id})}" class="btn btn-secondary" style="padding: 0.25rem 0.55rem; font-size: 0.78rem; text-decoration: none;">
+                                                Karta
+                                            </a>
+                                        </div>
+                                    </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(pacienti)}">
-                                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                                    <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">
                                         Žádný pacient nebyl nalezen.
                                     </td>
                                 </tr>

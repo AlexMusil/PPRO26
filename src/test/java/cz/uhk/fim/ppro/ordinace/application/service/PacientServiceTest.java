@@ -27,6 +27,9 @@ class PacientServiceTest {
     @Mock
     private PacientRepository pacientRepository;
 
+    @Mock
+    private RezervaceRepository rezervaceRepository;
+
     @InjectMocks
     private PacientService pacientService;
 

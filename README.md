@@ -273,6 +273,10 @@ docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn
     - **Prezentační vrstva (Web UI Thymeleaf & REST API):**
       - Vytvoření jednotné navigace a záhlaví (`templates/fragments/layout.html`).
       - Nové webové stránky: `/kalendar` (týdenní interaktivní přehled slotů), `/lekari` (seznam lékařů a rozvrhů), `/navstevy` (evidence návštěv a vykazování výkonů), `/vykazy` (měsíční výkaz pro pojišťovnu), `/call-list` (seznam pacientů k obvolání).
+      - **Detail karty pacienta a sledování spolehlivosti (`/pacienti/{id}`):**
+        - Zobrazení kompletní časové osy pacienta (proběhlé návštěvy, lékařské zprávy, zrušené termíny).
+        - Výpočet a vizuální indikátor nespolehlivosti (častého rušení termínů, např. `⚠️ 2× zrušeno` u paní Krátké) přímo v seznamu pacientů i v rezervačním dialogu kalendáře.
+        - Zrychlené prokliknutí z evidence pacientů i z Call-listu přímo do kalendáře s předvyplněným pacientem (eliminace zbytečných kliků pro recepci).
       - REST API kontrolery: `LekarRestController`, `VykonRestController`, `RezervaceRestController`, `NavstevaRestController`, `VykazRestController` se sjednoceným `GlobalExceptionHandler`.
     - **Testování:**
       - Implementována sada unit testů pro doménovou byznys logiku (`RezervaceServiceTest`, `NavstevaServiceTest`, `VykazServiceTest`).

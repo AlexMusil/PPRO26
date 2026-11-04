@@ -99,3 +99,4 @@ public class SlotDto {
         this.stav = stav;
     }
 }
+

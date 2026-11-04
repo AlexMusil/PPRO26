@@ -170,3 +170,4 @@ class RezervaceServiceTest {
         assertEquals(StavRezervace.K_PREOBJEDNANI, dotcene.get(0).getStav());
     }
 }
+

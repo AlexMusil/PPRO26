@@ -10,3 +10,4 @@ CREATE TABLE vykon (
 );
 
 CREATE INDEX idx_vykon_nazev ON vykon (nazev);
+

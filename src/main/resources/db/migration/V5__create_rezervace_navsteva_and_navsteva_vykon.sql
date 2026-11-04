@@ -40,3 +40,4 @@ CREATE TABLE navsteva_vykon (
 
 CREATE INDEX idx_navsteva_vykon_navsteva ON navsteva_vykon (navsteva_id);
 CREATE INDEX idx_navsteva_vykon_kod ON navsteva_vykon (vykon_kod);
+

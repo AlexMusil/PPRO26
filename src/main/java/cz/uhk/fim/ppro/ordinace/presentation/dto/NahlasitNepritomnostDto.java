@@ -63,3 +63,4 @@ public class NahlasitNepritomnostDto {
         this.duvod = duvod;
     }
 }
+

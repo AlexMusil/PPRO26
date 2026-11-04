@@ -38,3 +38,4 @@ public class VykonService {
                 .orElseThrow(() -> new EntityNotFoundException("Výkon s kódem '" + kod + "' nebyl nalezen."));
     }
 }
+

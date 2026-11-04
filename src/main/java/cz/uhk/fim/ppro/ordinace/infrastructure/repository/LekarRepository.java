@@ -14,3 +14,4 @@ public interface LekarRepository extends JpaRepository<Lekar, UUID> {
 
     List<Lekar> findAllByAktivniTrueOrderByPrijmeniAscJmenoAsc();
 }
+

@@ -72,3 +72,4 @@ public class VykonDto {
         this.aktivni = aktivni;
     }
 }
+

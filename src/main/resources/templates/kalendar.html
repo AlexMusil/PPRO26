@@ -207,7 +207,7 @@
                                 <option value="">-- Vyberte pacienta z evidence --</option>
                                 <option th:each="p : ${pacienti}"
                                         th:value="${p.id}"
-                                        th:text="${p.prijmeni + ' ' + p.jmeno + ' (' + p.cisloPojistence + ', tel: ' + p.telefon + ')'}">
+                                        th:text="${p.prijmeni + ' ' + p.jmeno + ' (' + p.cisloPojistence + ', tel: ' + p.telefon + ')' + (p.pocetZrusenychRezervaci >= 2 ? ' [⚠️ ' + p.pocetZrusenychRezervaci + '× zrušeno!]' : '')}">
                                     Nováková Marie
                                 </option>
                             </select>
@@ -264,3 +264,4 @@
     </script>
 </body>
 </html>
+

@@ -182,3 +182,4 @@ public class RezervaceResponseDto {
         this.navstevaId = navstevaId;
     }
 }
+

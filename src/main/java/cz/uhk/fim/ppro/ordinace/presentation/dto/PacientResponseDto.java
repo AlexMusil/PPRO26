@@ -15,6 +15,7 @@ public class PacientResponseDto {
     private String pojistovna;
     private String poznamka;
     private LocalDateTime vytvorenoDne;
+    private long pocetZrusenychRezervaci;
 
     public PacientResponseDto() {
     }
@@ -22,6 +23,12 @@ public class PacientResponseDto {
     public PacientResponseDto(UUID id, String jmeno, String prijmeni, Integer rokNarozeni,
                               String telefon, String cisloPojistence, String pojistovna,
                               String poznamka, LocalDateTime vytvorenoDne) {
+        this(id, jmeno, prijmeni, rokNarozeni, telefon, cisloPojistence, pojistovna, poznamka, vytvorenoDne, 0);
+    }
+
+    public PacientResponseDto(UUID id, String jmeno, String prijmeni, Integer rokNarozeni,
+                              String telefon, String cisloPojistence, String pojistovna,
+                              String poznamka, LocalDateTime vytvorenoDne, long pocetZrusenychRezervaci) {
         this.id = id;
         this.jmeno = jmeno;
         this.prijmeni = prijmeni;
@@ -31,9 +38,14 @@ public class PacientResponseDto {
         this.pojistovna = pojistovna;
         this.poznamka = poznamka;
         this.vytvorenoDne = vytvorenoDne;
+        this.pocetZrusenychRezervaci = pocetZrusenychRezervaci;
     }
 
     public static PacientResponseDto fromEntity(Pacient p) {
+        return fromEntity(p, 0);
+    }
+
+    public static PacientResponseDto fromEntity(Pacient p, long pocetZrusenychRezervaci) {
         return new PacientResponseDto(
                 p.getId(),
                 p.getJmeno(),
@@ -43,7 +55,8 @@ public class PacientResponseDto {
                 p.getCisloPojistence(),
                 p.getPojistovna(),
                 p.getPoznamka(),
-                p.getVytvorenoDne()
+                p.getVytvorenoDne(),
+                pocetZrusenychRezervaci
         );
     }
 
@@ -117,5 +130,17 @@ public class PacientResponseDto {
 
     public void setVytvorenoDne(LocalDateTime vytvorenoDne) {
         this.vytvorenoDne = vytvorenoDne;
+    }
+
+    public long getPocetZrusenychRezervaci() {
+        return pocetZrusenychRezervaci;
+    }
+
+    public void setPocetZrusenychRezervaci(long pocetZrusenychRezervaci) {
+        this.pocetZrusenychRezervaci = pocetZrusenychRezervaci;
+    }
+
+    public boolean isNespolehlivy() {
+        return pocetZrusenychRezervaci >= 2;
     }
 }

@@ -30,3 +30,4 @@ CREATE TABLE ordinacni_doba (
 );
 
 CREATE INDEX idx_ordinacni_doba_lekar_den ON ordinacni_doba (lekar_id, den_v_tydnu);
+

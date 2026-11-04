@@ -88,3 +88,4 @@ public class NavstevaVykonResponseDto {
         this.poznamka = poznamka;
     }
 }
+

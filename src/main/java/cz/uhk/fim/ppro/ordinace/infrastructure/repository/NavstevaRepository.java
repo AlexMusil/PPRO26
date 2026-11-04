@@ -29,3 +29,4 @@ public interface NavstevaRepository extends JpaRepository<Navsteva, UUID> {
                                        @Param("od") LocalDateTime od,
                                        @Param("do") LocalDateTime doCas);
 }
+

@@ -12,3 +12,4 @@ public interface NavstevaVykonRepository extends JpaRepository<NavstevaVykon, UU
 
     List<NavstevaVykon> findByNavstevaId(UUID navstevaId);
 }
+

@@ -21,3 +21,4 @@ public enum StavRezervace {
         return this == PLANOVANA;
     }
 }
+

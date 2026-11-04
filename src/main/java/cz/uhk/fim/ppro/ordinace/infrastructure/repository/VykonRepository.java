@@ -14,3 +14,4 @@ public interface VykonRepository extends JpaRepository<Vykon, String> {
 
     Optional<Vykon> findByKod(String kod);
 }
+
