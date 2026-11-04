@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lékaři a ordinační hodiny | Ordinace Na Vyhlídce</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: header('lekari')}"></header>
+
+    <div class="container">
+
+        <div class="main-grid">
+
+            <!-- Seznam lékařů -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        Lékaři ordinace
+                    </h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Lékař</th>
+                                    <th>Specializace</th>
+                                    <th>Kontakt</th>
+                                    <th>Akce</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="l : ${lekari}" th:style="${vybranyLekar != null && vybranyLekar.id == l.id ? 'background-color: var(--primary-light);' : ''}">
+                                    <td>
+                                        <strong th:text="${l.celeJmeno}">MUDr. Jana Hrubá</strong>
+                                    </td>
+                                    <td th:text="${l.specializace}">Všeobecné praktické lékařství</td>
+                                    <td>
+                                        <div th:text="${l.telefon}">+420 495 123 451</div>
+                                        <small class="text-muted" th:text="${l.email}">hruba@ordinace-vyhlidka.cz</small>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/lekari(lekarId=${l.id})}" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.85rem;">
+                                            Zobrazit rozvrh
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail ordinačních hodin vybraného lékaře -->
+            <div class="card" th:if="${vybranyLekar != null}">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Ordinační hodiny: <span th:text="${vybranyLekar.celeJmeno}">MUDr. Jana Hrubá</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p style="margin-bottom: 1rem; color: var(--text-muted);">
+                        Specializace: <strong th:text="${vybranyLekar.specializace}">Všeobecné lékařství</strong>
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Den</th>
+                                    <th>Čas od - do</th>
+                                    <th>Pracoviště / Adresa</th>
+                                    <th>Příjem rezervací</th>
+                                    <th>Poznámka</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="od : ${rozvrh}">
+                                    <td><strong th:text="${od.denNazev}">Pondělí</strong></td>
+                                    <td>
+                                        <code th:text="${#temporals.format(od.casOd, 'HH:mm') + ' - ' + #temporals.format(od.casDo, 'HH:mm')}">08:00 - 13:00</code>
+                                    </td>
+                                    <td th:text="${od.pracoviste}">Ordinace Na Vyhlídce</td>
+                                    <td>
+                                        <span th:if="${od.lzeObjednavat}" class="badge-status badge-probehla">Lze objednávat</span>
+                                        <span th:unless="${od.lzeObjednavat}" class="badge-status badge-zrusena" title="Nelze objednávat přes recepci Na Vyhlídce">Externí (nelze obj.)</span>
+                                    </td>
+                                    <td style="color: var(--text-muted); font-size: 0.88rem;" th:text="${od.poznamka}">Běžná ordinace</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(rozvrh)}">
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                        Tento lékař nemá definované žádné ordinační hodiny.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <a th:href="@{/kalendar(lekarId=${vybranyLekar.id})}" class="btn btn-primary">
+                            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            Otevřít kalendář a objednat pacienta
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

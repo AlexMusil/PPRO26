@@ -170,15 +170,23 @@ erDiagram
 src/main/java/cz/uhk/fim/ppro/ordinace/
 ├── OrdinaceApplication.java        # Vstupní bod Spring Boot aplikace
 ├── presentation/                   # 1. Prezentační vrstva
-│   ├── controller/                 # PacientWebController (UI) & PacientRestController (REST API)
-│   ├── dto/                        # PacientCreateDto, PacientResponseDto
-│   └── GlobalExceptionHandler.java # Centralizované ošetření chyb a mapování stavových kódů
+│   ├── controller/                 # Web kontrolery (UI Thymeleaf) & REST kontrolery (/api/*)
+│   │   ├── PacientWebController.java / PacientRestController.java
+│   │   ├── KalendarWebController.java / RezervaceRestController.java
+│   │   ├── LekarWebController.java / LekarRestController.java
+│   │   ├── NavstevaWebController.java / NavstevaRestController.java
+│   │   ├── VykazWebController.java / VykazRestController.java
+│   │   ├── CallListWebController.java
+│   │   └── GlobalExceptionHandler.java # Centralizované ošetření chyb napříč REST API
+│   ├── dto/                        # Datové přenosové objekty (DTOs pro pacienty, lékaře, rezervace, návštěvy, výkazy)
+│   └── validation/                 # Validační anotace a validátory (rodné číslo, formát formuláře)
 ├── application/                    # 2. Aplikační a doménová vrstva
-│   ├── model/                      # Doménová entita Pacient
-│   ├── service/                    # PacientService (vyhledávání, validace, detekce duplicit)
-│   └── exception/                  # Doménové výjimky (DuplicateEntityException, BusinessRuleException...)
+│   ├── model/                      # Doménové entity (Pacient, Lekar, OrdinacniDoba, Rezervace, Navsteva, Vykon, NavstevaVykon)
+│   ├── service/                    # Byznys logika (PacientService, LekarService, RezervaceService, NavstevaService, VykazService, VykonService)
+│   ├── validation/                 # Doménový validátor rodného čísla
+│   └── exception/                  # Doménové výjimky (BusinessRuleException, DuplicateEntityException, EntityNotFoundException)
 └── infrastructure/                 # 3. Infrastrukturní a datová vrstva
-    └── repository/                 # PacientRepository (Spring Data JPA, SQL dotazy pro fulltext)
+    └── repository/                 # Spring Data JPA repozitáře (Pacient, Lekar, OrdinacniDoba, Rezervace, Navsteva, Vykon, NavstevaVykon)
 ```
 
 ---
@@ -193,11 +201,23 @@ docker compose up --build
 ```
 
 Po spuštění je systém dostupný na adresách:
-- **Webové rozhraní:** [http://localhost:8080](http://localhost:8080)
-- **REST API:** [http://localhost:8080/api/pacienti](http://localhost:8080/api/pacienti)
+- **Webové rozhraní (Recepce & Lékaři):**
+  - **Pacienti:** [http://localhost:8080/pacienti](http://localhost:8080/pacienti) (nebo [http://localhost:8080](http://localhost:8080))
+  - **Týdenní kalendář & Rezervace:** [http://localhost:8080/kalendar](http://localhost:8080/kalendar)
+  - **Lékaři & Ordinační hodiny:** [http://localhost:8080/lekari](http://localhost:8080/lekari)
+  - **Návštěvy & Zdravotní výkony:** [http://localhost:8080/navstevy](http://localhost:8080/navstevy)
+  - **Měsíční výkaz pro pojišťovnu:** [http://localhost:8080/vykazy](http://localhost:8080/vykazy)
+  - **Nemoc lékaře & Call-list:** [http://localhost:8080/call-list](http://localhost:8080/call-list)
+- **REST API:**
+  - `GET /api/pacienti`, `POST /api/pacienti`
+  - `GET /api/lekari`, `GET /api/lekari/{id}/ordinacni-doby`
+  - `POST /api/rezervace`, `GET /api/rezervace/{id}`, `POST /api/rezervace/{id}/zrusit`, `GET /api/rezervace/call-list`
+  - `GET /api/navstevy`, `POST /api/navstevy` (M:N vazba na výkony s počtem)
+  - `GET /api/vykony`
+  - `GET /api/vykazy/mesicni?rok=2026&mesic=10&lekarId=...`
 
 ### Spuštění testů
-Unit a integrační testy ověřují správné chování vyhledávání, detekci duplicit a zákaz mazání historie pacienta:
+Unit a integrační testy ověřují správné chování vyhledávání, detekci kolizí, ordinační mantinely, zákaz vykazování do budoucna, Call-list i výkaznictví pojišťovnám:
 ```bash
 docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn test
 ```
@@ -230,4 +250,31 @@ docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn
     - Aktualizovány testy `PacientServiceTest` a `PacientRestControllerTest` o testovací scénáře odmítnutí chybných údajů (HTTP 400 Bad Request, BusinessRuleException).
     - Vyčištění uživatelského rozhraní a zdrojových kódů od vývojových a meta poznámek pro čisté produkční zobrazení.
     - Nahrazení emotikonů v uživatelském rozhraní čistými vektorovými SVG ikonami a zjednodušení záhlaví.
+
+- **2026-11-04:**
+  - **Implementace kompletního doménového modelu a splnění všech požadavků předmětu PPRO:**
+    - **Nové entity třívrstvé architektury:**
+      - `Lekar` – identifikační údaje lékařů ordinace, specializace, aktivní stav.
+      - `OrdinacniDoba` – ordinační hodiny pro jednotlivé dny v týdnu, adresa pracoviště, příznak `lzeObjednavat` (zohlednění externí praxe v úterý odpoledne na jiné adrese).
+      - `Vykon` – centrální číselník zdravotních výkonů VZP s bodovým ohodnocením.
+      - `Rezervace` – časové okno rezervace, stavový automat (`PLANOVANA`, `PROBEHLA`, `ZRUSENA_PACIENTEM`, `ZRUSENA_LEKAREM`, `K_PREOBJEDNANI`), důvod návštěvy.
+      - `Navsteva` – záznam o reálně uskutečněném vyšetření s lékařskou zprávou a doporučením.
+      - `NavstevaVykon` – **povinná asociační entita vazby M:N** mezi `Navsteva` a `Vykon` s dodatečným atributem `pocet` (počet provedení výkonu u jedné návštěvy).
+    - **Verzované databázové migrace Flyway a syntetická data:**
+      - `V3__create_lekar_and_ordinacni_doba.sql` – struktura pro lékaře a ordinační hodiny.
+      - `V4__create_vykon_table.sql` – číselník výkonů s body.
+      - `V5__create_rezervace_navsteva_and_navsteva_vykon.sql` – tabulky rezervací, návštěv a asociační vazby M:N.
+      - `V6__seed_data.sql` – syntetická data 3 lékařů ordinace, jejich ordinační rozvrhy, 8 zdravotních výkonů VZP, vzorové proběhlé i zrušené rezervace a návštěvy s vykázanými výkony.
+    - **Aplikační servisní vrstva a obchodní pravidla:**
+      - `RezervaceService`: striktní zákaz překryvu rezervací stejného lékaře, validace 15minutové mřížky, kontrola platných ordinačních hodin a pracoviště, uvolnění slotu při zrušení termínu, výpočet statistiky rušení pacienta.
+      - `NavstevaService`: zaevidování proběhlé návštěvy, přiřazení výkonů s počtem, ochrana proti vykazování výkonů do budoucna (`casOd.isAfter(now)`).
+      - `VykazService`: agregace provedených výkonů a výpočet celkového počtu bodů pro pojišťovny za vybraný měsíc a lékaře.
+      - Řešení nemoci lékaře (Otevřený bod 5 klienta): nahlášení nepřítomnosti lékaře $\to$ automatický přesun kolidujících rezervací do `K_PREOBJEDNANI` a vygenerování pracovního Call-listu pro recepci.
+    - **Prezentační vrstva (Web UI Thymeleaf & REST API):**
+      - Vytvoření jednotné navigace a záhlaví (`templates/fragments/layout.html`).
+      - Nové webové stránky: `/kalendar` (týdenní interaktivní přehled slotů), `/lekari` (seznam lékařů a rozvrhů), `/navstevy` (evidence návštěv a vykazování výkonů), `/vykazy` (měsíční výkaz pro pojišťovnu), `/call-list` (seznam pacientů k obvolání).
+      - REST API kontrolery: `LekarRestController`, `VykonRestController`, `RezervaceRestController`, `NavstevaRestController`, `VykazRestController` se sjednoceným `GlobalExceptionHandler`.
+    - **Testování:**
+      - Implementována sada unit testů pro doménovou byznys logiku (`RezervaceServiceTest`, `NavstevaServiceTest`, `VykazServiceTest`).
+      - Implementovány integrační testy REST kontrolerů (`RezervaceRestControllerTest`, `VykonRestControllerTest`).
 

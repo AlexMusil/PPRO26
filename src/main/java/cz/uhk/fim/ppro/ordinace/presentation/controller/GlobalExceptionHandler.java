@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice(assignableTypes = PacientRestController.class)
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateEntityException.class)

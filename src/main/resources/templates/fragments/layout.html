@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+    <!-- Společná hlavička a navigace -->
+    <header th:fragment="header(activePage)">
+        <div class="header-inner">
+            <div class="logo-group">
+                <div class="logo-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="clinic-title">Ordinace Na Vyhlídce</h1>
+                    <p class="clinic-subtitle">Informační a rezervační systém ordinace</p>
+                </div>
+            </div>
+            <div>
+                <span class="system-badge">PPRO26 – Rezervace v ordinaci</span>
+            </div>
+
+            <nav class="main-nav">
+                <a th:href="@{/pacienti}" class="nav-link" th:classappend="${activePage == 'pacienti' ? 'active' : ''}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Pacienti
+                </a>
+                <a th:href="@{/kalendar}" class="nav-link" th:classappend="${activePage == 'kalendar' ? 'active' : ''}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    Kalendář & Rezervace
+                </a>
+                <a th:href="@{/lekari}" class="nav-link" th:classappend="${activePage == 'lekari' ? 'active' : ''}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Lékaři a ordinační hodiny
+                </a>
+                <a th:href="@{/navstevy}" class="nav-link" th:classappend="${activePage == 'navstevy' ? 'active' : ''}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                    Návštěvy & Výkony
+                </a>
+                <a th:href="@{/vykazy}" class="nav-link" th:classappend="${activePage == 'vykazy' ? 'active' : ''}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Měsíční výkaz pojišťovny
+                </a>
+                <a th:href="@{/call-list}" class="nav-link" th:classappend="${activePage == 'call-list' ? 'active' : ''}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    Nemoc lékaře & Call-list
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Společná patička -->
+    <footer th:fragment="footer">
+        <p>&copy; 2026 Ordinace Na Vyhlídce – Semestrální projekt Pokročilé programování (PPRO) | FIM UHK</p>
+    </footer>
+
+</body>
+</html>

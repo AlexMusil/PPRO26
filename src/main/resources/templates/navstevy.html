@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Návštěvy a výkony | Ordinace Na Vyhlídce</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: header('navstevy')}"></header>
+
+    <div class="container">
+
+        <!-- Notifikace -->
+        <div th:if="${uspechZprava}" class="alert alert-success">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <strong>Úspěch:</strong> <span th:text="${uspechZprava}">Návštěva byla úspěšně uložena.</span>
+        </div>
+        <div th:if="${chybaFormulare}" class="alert alert-danger">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <strong>Chyba:</strong> <span th:text="${chybaFormulare}">Došlo k chybě při zaevidování návštěvy.</span>
+        </div>
+
+        <div class="main-grid">
+
+            <!-- Seznam realizovaných návštěv -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        Realizované návštěvy a vykázané výkony
+                        <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted);"
+                              th:text="'(' + ${#lists.size(navstevy)} + ')'">(2)</span>
+                    </h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Datum a čas</th>
+                                    <th>Pacient</th>
+                                    <th>Lékař</th>
+                                    <th>Zpráva / Diagnóza</th>
+                                    <th>Vykázané výkony (M:N)</th>
+                                    <th>Celkem bodů</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="n : ${navstevy}">
+                                    <td>
+                                        <strong th:text="${#temporals.format(n.datumCas, 'dd.MM.yyyy HH:mm')}">12.10.2026 08:35</strong>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 600;" th:text="${n.pacientJmeno}">Nováková Marie</div>
+                                        <code th:text="${n.pacientCisloPojistence}">685412/1234</code>
+                                    </td>
+                                    <td th:text="${n.lekarJmeno}">MUDr. Jana Hrubá</td>
+                                    <td>
+                                        <div style="font-size: 0.88rem;" th:text="${n.lekarskaZprava}">Tlak 135/85 mmHg...</div>
+                                        <small th:if="${n.doporuceni != null}" style="color: var(--text-muted); display: block;" th:text="'Doporučení: ' + ${n.doporuceni}">Doporučení...</small>
+                                    </td>
+                                    <td>
+                                        <ul style="padding-left: 1rem; margin: 0; font-size: 0.82rem;">
+                                            <li th:each="nv : ${n.vykony}">
+                                                <strong th:text="${nv.pocet + 'x'}">1x</strong>
+                                                <span th:text="${nv.vykonKod + ' (' + nv.celkemBodu + ' b.)'}">09513 (280 b.)</span>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <strong style="color: var(--primary); font-size: 1.05rem;" th:text="${n.celkemBodu + ' b.'}">410 b.</strong>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(navstevy)}">
+                                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                        Zatím nebyly zaevidovány žádné proběhlé návštěvy.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulář pro zaevidování návštěvy a vykázání výkonů -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                        Zaevidovat proběhlou návštěvu
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/navstevy/nova}" th:object="${novaNavsteva}" method="post">
+
+                        <div class="form-group">
+                            <label class="form-label" for="rezervaceSelect">Proběhlá rezervace z kalendáře *</label>
+                            <select id="rezervaceSelect" th:field="*{rezervaceId}" class="form-control" required>
+                                <option value="">-- Vyberte rezervaci k realizaci --</option>
+                                <option th:each="r : ${zpusobileRezervace}"
+                                        th:value="${r.id}"
+                                        th:text="${#temporals.format(r.casOd, 'dd.MM.yyyy HH:mm') + ' - ' + r.pacientJmeno + ' (' + r.lekarJmeno + ')'}">
+                                    12.10.2026 08:30 - Nováková Marie
+                                </option>
+                            </select>
+                            <div class="helper-text">Lze vybrat pouze termíny, které se již v reálu uskutečnily (zákaz vykazování do budoucna).</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="datumCasInput">Skutečný čas vyšetření *</label>
+                            <input type="datetime-local" id="datumCasInput" th:field="*{datumCas}" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="zpravaText">Lékařská zpráva a průběh vyšetření *</label>
+                            <textarea id="zpravaText" th:field="*{lekarskaZprava}" class="form-control" rows="3"
+                                      placeholder="Klinický nález, změřené hodnoty, diagnóza..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="doporuceniText">Doporučení a medikace</label>
+                            <input type="text" id="doporuceniText" th:field="*{doporuceni}" class="form-control"
+                                   placeholder="Doporučený režim, předepsané léky, termín kontroly...">
+                        </div>
+
+                        <h4 style="margin: 1.25rem 0 0.5rem 0; font-size: 0.95rem; font-weight: 700;">
+                            Vykázané zdravotní výkony z číselníku (M:N)
+                        </h4>
+
+                        <!-- Položky výkonů s počtem opakování -->
+                        <div th:each="polozka, stat : *{vykony}" style="display: flex; gap: 0.5rem; margin-bottom: 0.65rem; align-items: center;">
+                            <div style="flex: 3;">
+                                <select th:field="*{vykony[__${stat.index}__].vykonKod}" class="form-control" style="font-size: 0.88rem;">
+                                    <option value="">-- Žádný další výkon --</option>
+                                    <option th:each="v : ${vykony}"
+                                            th:value="${v.kod}"
+                                            th:text="${v.kod + ' - ' + v.nazev + ' (' + v.body + ' b.)'}">
+                                        09513 - Cílené vyšetření (280 b.)
+                                    </option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <input type="number" min="1" max="20" th:field="*{vykony[__${stat.index}__].pocet}"
+                                       class="form-control" placeholder="Počet" style="font-size: 0.88rem;">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; text-align: right;">
+                            <button type="submit" class="btn btn-primary">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                Uložit návštěvu a vykázat výkony
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

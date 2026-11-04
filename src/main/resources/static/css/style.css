@@ -431,3 +431,156 @@ footer {
   border-top: 1px solid var(--border);
   margin-top: 4rem;
 }
+
+/* Navigace */
+.main-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.nav-link.active {
+  color: var(--primary);
+  background: var(--primary-light);
+  border: 1px solid #bfdbfe;
+}
+
+/* Stavové štítky rezervací */
+.badge-status {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.badge-planovana {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-probehla {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-zrusena {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-k-preobjednani {
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fdba74;
+}
+
+/* Kalendář a sloty */
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.slot-item {
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
+}
+
+.slot-item.free {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+  cursor: pointer;
+}
+
+.slot-item.free:hover {
+  background: #dcfce7;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.slot-item.occupied {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+
+.slot-item.disabled {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.slot-time {
+  font-weight: 700;
+  display: block;
+  font-size: 0.95rem;
+}
+
+/* Tabulka výkonů a formuláře */
+.vykony-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+}
+
+.vykony-table th,
+.vykony-table td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.vykony-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.summary-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary);
+}

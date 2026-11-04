@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalendář a rezervace | Ordinace Na Vyhlídce</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .week-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            align-items: start;
+        }
+        @media (max-width: 1024px) {
+            .week-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .day-column {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .day-header {
+            background: #f1f5f9;
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        .day-body {
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 520px;
+            overflow-y: auto;
+        }
+        .slot-card {
+            padding: 0.5rem 0.65rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            font-size: 0.82rem;
+            text-align: left;
+        }
+        .slot-card.free {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .slot-card.free:hover {
+            background: #dcfce7;
+        }
+        .slot-card.occupied {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: header('kalendar')}"></header>
+
+    <div class="container">
+
+        <!-- Notifikace -->
+        <div th:if="${uspechZprava}" class="alert alert-success">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <strong>Úspěch:</strong> <span th:text="${uspechZprava}">Operace byla úspěšná.</span>
+        </div>
+        <div th:if="${chybaFormulare}" class="alert alert-danger">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <strong>Chyba:</strong> <span th:text="${chybaFormulare}">Došlo k chybě při zpracování.</span>
+        </div>
+
+        <!-- Výběr lékaře a týdne -->
+        <div class="week-nav">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <label for="lekarSelect" style="font-weight: 600;">Lékař:</label>
+                <form id="lekarForm" th:action="@{/kalendar}" method="get" style="display: inline-flex; gap: 0.5rem;">
+                    <select id="lekarSelect" name="lekarId" class="form-control" style="width: auto; padding: 0.5rem 0.75rem;" onchange="this.form.submit()">
+                        <option th:each="l : ${lekari}"
+                                th:value="${l.id}"
+                                th:text="${l.celeJmeno + ' (' + l.specializace + ')'}"
+                                th:selected="${vybranyLekarId != null && vybranyLekarId == l.id}">
+                            MUDr. Jana Hrubá
+                        </option>
+                    </select>
+                    <input type="hidden" name="datum" th:value="${vybraneDatum}">
+                </form>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <a th:href="@{/kalendar(lekarId=${vybranyLekarId}, datum=${predchoziTyden})}" class="btn btn-secondary">
+                    &larr; Předchozí týden
+                </a>
+                <span style="font-weight: 700; font-size: 1.05rem;"
+                      th:text="'Týden od ' + ${#temporals.format(pondeli, 'dd.MM.yyyy')}">
+                    Týden od 12.10.2026
+                </span>
+                <a th:href="@{/kalendar(lekarId=${vybranyLekarId}, datum=${dalsiTyden})}" class="btn btn-secondary">
+                    Další týden &rarr;
+                </a>
+            </div>
+        </div>
+
+        <!-- Mřížka týdenního kalendáře -->
+        <div class="week-grid" th:if="${tydenSloty != null}">
+            <div class="day-column" th:each="entry : ${tydenSloty}">
+                <div class="day-header">
+                    <div th:switch="${entry.key.dayOfWeek.value}">
+                        <span th:case="1">Pondělí</span>
+                        <span th:case="2">Úterý</span>
+                        <span th:case="3">Středa</span>
+                        <span th:case="4">Čtvrtek</span>
+                        <span th:case="5">Pátek</span>
+                        <span th:case="*">Víkend</span>
+                    </div>
+                    <small style="color: var(--text-muted); font-weight: normal;"
+                           th:text="${#temporals.format(entry.key, 'dd.MM.yyyy')}">12.10.2026</small>
+                </div>
+                <div class="day-body">
+                    <div th:if="${#lists.isEmpty(entry.value)}" style="text-align: center; color: var(--text-muted); padding: 1.5rem 0.5rem; font-size: 0.85rem;">
+                        Lékař v tento den v ordinaci neordinuje.
+                    </div>
+
+                    <div th:each="s : ${entry.value}">
+                        <!-- Volný slot -->
+                        <div th:if="${s.volno}"
+                             class="slot-card free"
+                             th:onclick="'predvyplnitFormular(\'' + ${#temporals.format(s.casOd, 'yyyy-MM-dd''T''HH:mm')} + '\')'"
+                             title="Kliknutím založíte rezervaci pro tento čas">
+                            <div>
+                                <strong th:text="${#temporals.format(s.casOd, 'HH:mm')}">08:00</strong> -
+                                <span th:text="${#temporals.format(s.casDo, 'HH:mm')}">08:15</span>
+                            </div>
+                            <span style="font-size: 0.75rem; font-weight: 700;">VOLNO +</span>
+                        </div>
+
+                        <!-- Obsazený slot -->
+                        <div th:unless="${s.volno}" class="slot-card occupied">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                <strong>
+                                    <span th:text="${#temporals.format(s.casOd, 'HH:mm')}">08:30</span> -
+                                    <span th:text="${#temporals.format(s.casDo, 'HH:mm')}">09:00</span>
+                                </strong>
+                                <span th:if="${s.stav != null}"
+                                      th:class="'badge-status ' + (${s.stav.name() == 'PLANOVANA'} ? 'badge-planovana' : (${s.stav.name() == 'PROBEHLA'} ? 'badge-probehla' : 'badge-zrusena'))"
+                                      th:text="${s.stav.popis}">Plánovaná</span>
+                            </div>
+                            <div style="font-weight: 600;" th:text="${s.pacientJmeno}">Nováková Marie</div>
+                            <div style="color: var(--text-muted); font-size: 0.78rem;" th:text="${s.duvod}">Kontrola tlaku</div>
+                            <div th:if="${s.rezervaceId != null && s.stav != null && s.stav.name() == 'PLANOVANA'}" style="margin-top: 0.4rem; text-align: right;">
+                                <form th:action="@{/kalendar/rezervace/{id}/zrusit(id=${s.rezervaceId})}" method="post" style="display: inline;"
+                                      onsubmit="return confirm('Opravdu chcete zrušit tuto rezervaci? Časový slot bude uvolněn.')">
+                                    <input type="hidden" name="lekarId" th:value="${vybranyLekarId}">
+                                    <input type="hidden" name="datum" th:value="${entry.key}">
+                                    <input type="hidden" name="typZruseni" value="ZRUSENA_PACIENTEM">
+                                    <input type="hidden" name="poznamka" value="Zrušeno přes týdenní přehled kalendáře">
+                                    <button type="submit" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: var(--danger); border-color: #fca5a5;">
+                                        Zrušit
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulář pro založení nové rezervace -->
+        <div class="card" style="margin-top: 2rem;" id="rezervaceFormCard">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Založit novou rezervaci pro pacienta
+                </h3>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/kalendar/rezervace/nova}" th:object="${novaRezervace}" method="post">
+                    <input type="hidden" name="lekarId" th:value="${vybranyLekarId}">
+                    <input type="hidden" name="datum" th:value="${vybraneDatum}">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="pacientSelect">Pacient *</label>
+                            <select id="pacientSelect" th:field="*{pacientId}" class="form-control" required>
+                                <option value="">-- Vyberte pacienta z evidence --</option>
+                                <option th:each="p : ${pacienti}"
+                                        th:value="${p.id}"
+                                        th:text="${p.prijmeni + ' ' + p.jmeno + ' (' + p.cisloPojistence + ', tel: ' + p.telefon + ')'}">
+                                    Nováková Marie
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="casOdInput">Datum a čas začátku (15min mřížka) *</label>
+                            <input type="datetime-local" id="casOdInput" th:field="*{casOd}" class="form-control" required step="900">
+                            <div class="helper-text">Základní slot je 15 minut (:00, :15, :30, :45).</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="delkaSelect">Předpokládaná délka návštěvy *</label>
+                            <select id="delkaSelect" th:field="*{delkaMinut}" class="form-control" required>
+                                <option value="15">15 minut (běžná kontrola / recept / injekce)</option>
+                                <option value="30">30 minut (cílené vyšetření / EKG)</option>
+                                <option value="45">45 minut (komplexní vyšetření)</option>
+                                <option value="60">60 minut (preventivní prohlídka / vstupní prohlídka)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="duvodInput">Důvod návštěvy (poznámka recepce) *</label>
+                            <input type="text" id="duvodInput" th:field="*{duvodNavstevy}" class="form-control"
+                                   placeholder="Např. Kontrola tlaku, odběry krve, žádanka..." required>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            Potvrdit a uložit rezervaci
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <script>
+        function predvyplnitFormular(casOdIso) {
+            const input = document.getElementById('casOdInput');
+            if (input) {
+                input.value = casOdIso;
+                document.getElementById('rezervaceFormCard').scrollIntoView({ behavior: 'smooth' });
+                input.focus();
+            }
+        }
+    </script>
+</body>
+</html>

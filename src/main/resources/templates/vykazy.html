@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Měsíční výkaz pro pojišťovnu | Ordinace Na Vyhlídce</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: header('vykazy')}"></header>
+
+    <div class="container">
+
+        <!-- Filtr období a lékaře -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    Výběr období pro vyúčtování pojišťovnám
+                </h3>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/vykazy}" method="get" class="form-row" style="align-items: flex-end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="mesicSelect">Měsíc</label>
+                        <select id="mesicSelect" name="mesic" class="form-control">
+                            <option value="1" th:selected="${mesic == 1}">Leden (01)</option>
+                            <option value="2" th:selected="${mesic == 2}">Únor (02)</option>
+                            <option value="3" th:selected="${mesic == 3}">Březen (03)</option>
+                            <option value="4" th:selected="${mesic == 4}">Duben (04)</option>
+                            <option value="5" th:selected="${mesic == 5}">Květen (05)</option>
+                            <option value="6" th:selected="${mesic == 6}">Červen (06)</option>
+                            <option value="7" th:selected="${mesic == 7}">Červenec (07)</option>
+                            <option value="8" th:selected="${mesic == 8}">Srpen (08)</option>
+                            <option value="9" th:selected="${mesic == 9}">Září (09)</option>
+                            <option value="10" th:selected="${mesic == 10}">Říjen (10)</option>
+                            <option value="11" th:selected="${mesic == 11}">Listopad (11)</option>
+                            <option value="12" th:selected="${mesic == 12}">Prosinec (12)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="rokInput">Rok</label>
+                        <input type="number" id="rokInput" name="rok" th:value="${rok}" class="form-control" min="2020" max="2030">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="lekarSelect">Lékař</label>
+                        <select id="lekarSelect" name="lekarId" class="form-control">
+                            <option value="" th:selected="${vybranyLekarId == null}">-- Všichni lékaři souhrnně --</option>
+                            <option th:each="l : ${lekari}"
+                                    th:value="${l.id}"
+                                    th:text="${l.celeJmeno}"
+                                    th:selected="${vybranyLekarId != null && vybranyLekarId == l.id}">
+                                MUDr. Jana Hrubá
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-primary" style="height: 44px;">
+                            Vygenerovat výkaz
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Souhrnné statistiky -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card" style="padding: 1.5rem; text-align: center;">
+                <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Vybrané období</div>
+                <div style="font-size: 1.5rem; font-weight: 800; margin-top: 0.25rem;" th:text="${mesic + ' / ' + rok}">10 / 2026</div>
+                <div style="color: var(--text-muted); font-size: 0.85rem;" th:text="${vykaz.lekarJmeno}">Všichni lékaři</div>
+            </div>
+
+            <div class="card" style="padding: 1.5rem; text-align: center;">
+                <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Počet vykázaných návštěv</div>
+                <div style="font-size: 1.8rem; font-weight: 800; margin-top: 0.25rem; color: var(--primary);" th:text="${vykaz.celkemNavstev}">2</div>
+                <div style="color: var(--text-muted); font-size: 0.85rem;">uzavřených vyšetření</div>
+            </div>
+
+            <div class="card" style="padding: 1.5rem; text-align: center;">
+                <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Celkový součet bodů</div>
+                <div style="font-size: 1.8rem; font-weight: 800; margin-top: 0.25rem; color: var(--success);" th:text="${vykaz.celkemBodu + ' bodů'}">950 bodů</div>
+                <div style="color: var(--text-muted); font-size: 0.85rem;">pro vyúčtování pojišťovnám</div>
+            </div>
+        </div>
+
+        <!-- Detailní tabulka výkonů -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    Detailní přehled provedených výkonů
+                </h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Kód výkonu</th>
+                                <th>Název zdravotního výkonu</th>
+                                <th style="text-align: right;">Bodové ohodnocení (1x)</th>
+                                <th style="text-align: right;">Celkový počet vykázání</th>
+                                <th style="text-align: right;">Celkem bodů</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p : ${vykaz.polozky}">
+                                <td>
+                                    <code style="font-size: 0.95rem; font-weight: 700;" th:text="${p.vykonKod}">09513</code>
+                                </td>
+                                <td>
+                                    <strong th:text="${p.vykonNazev}">Cílené vyšetření lékařem</strong>
+                                </td>
+                                <td style="text-align: right;" th:text="${p.bodyZaKus + ' b.'}">280 b.</td>
+                                <td style="text-align: right;">
+                                    <strong th:text="${p.celkemPocet + 'x'}">2x</strong>
+                                </td>
+                                <td style="text-align: right;">
+                                    <strong style="color: var(--primary);" th:text="${p.celkemBodu + ' b.'}">560 b.</strong>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(vykaz.polozky)}">
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                    Pro zvolené období a lékaře nebyly nalezeny žádné vykázané výkony.
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot th:if="${!#lists.isEmpty(vykaz.polozky)}">
+                            <tr style="background: #f8fafc; font-size: 1.05rem;">
+                                <td colspan="4" style="text-align: right; font-weight: 700; padding: 1rem;">
+                                    Celkový součet bodů pro pojišťovny:
+                                </td>
+                                <td style="text-align: right; font-weight: 800; color: var(--success); padding: 1rem;"
+                                    th:text="${vykaz.celkemBodu + ' bodů'}">
+                                    950 bodů
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

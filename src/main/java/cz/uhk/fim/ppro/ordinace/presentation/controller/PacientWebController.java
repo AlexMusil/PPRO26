@@ -24,7 +24,7 @@ public class PacientWebController {
         this.pacientService = pacientService;
     }
 
-    @GetMapping
+    @GetMapping({"", "/", "/pacienti"})
     public String index(@RequestParam(required = false) String query, Model model) {
         List<PacientResponseDto> pacienti = pacientService.searchPacienti(query);
         model.addAttribute("pacienti", pacienti);

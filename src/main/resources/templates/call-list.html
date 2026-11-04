@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call-list a nepřítomnost lékaře | Ordinace Na Vyhlídce</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: header('call-list')}"></header>
+
+    <div class="container">
+
+        <!-- Notifikace -->
+        <div th:if="${uspechZprava}" class="alert alert-success">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <strong>Úspěch:</strong> <span th:text="${uspechZprava}">Operace byla úspěšně provedena.</span>
+        </div>
+        <div th:if="${chybaFormulare}" class="alert alert-danger">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <strong>Chyba:</strong> <span th:text="${chybaFormulare}">Došlo k chybě.</span>
+        </div>
+
+        <div class="main-grid">
+
+            <!-- Tabulka Call-listu -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        Pracovní fronta recepce: Pacienti k obvolání a přeobjednání
+                        <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted);"
+                              th:text="'(' + ${#lists.size(callList)} + ')'">(0)</span>
+                    </h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Původní termín</th>
+                                    <th>Pacient</th>
+                                    <th>Telefon k obvolání</th>
+                                    <th>Lékař</th>
+                                    <th>Důvod návštěvy</th>
+                                    <th>Akce</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r : ${callList}">
+                                    <td>
+                                        <strong th:text="${#temporals.format(r.casOd, 'dd.MM.yyyy HH:mm')}">14.10.2026 09:00</strong>
+                                        <span class="badge-status badge-k-preobjednani" style="display: block; width: fit-content; margin-top: 0.25rem;">K přeobjednání</span>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 600;" th:text="${r.pacientJmeno}">Nováková Marie</div>
+                                        <code th:text="${r.pacientCisloPojistence}">685412/1234</code>
+                                    </td>
+                                    <td>
+                                        <a th:href="'tel:' + ${r.pacientTelefon}" style="font-weight: 700; color: var(--primary); text-decoration: none;" th:text="${r.pacientTelefon}">
+                                            +420 777 123 456
+                                        </a>
+                                    </td>
+                                    <td th:text="${r.lekarJmeno}">MUDr. Jana Hrubá</td>
+                                    <td>
+                                        <div th:text="${r.duvodNavstevy}">Kontrola tlaku</div>
+                                        <small style="color: var(--danger); display: block;" th:text="${r.poznamkaZruseni}">Nepřítomnost lékaře: Nemoc</small>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/kalendar(lekarId=${r.lekarId})}" class="btn btn-primary" style="padding: 0.35rem 0.65rem; font-size: 0.82rem;">
+                                            Přeobjednat v kalendáři
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(callList)}">
+                                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                        Fronta je prázdná. Žádní pacienti nečekají na přeobjednání z důvodu výpadku lékaře.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulář nahlášení nepřítomnosti lékaře -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        Nahlásit nepřítomnost lékaře (Nemoc / Dovolená)
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                        Při nahlášení nepřítomnosti systém automaticky vyhledá všechny dotčené rezervace daného lékaře v zadaném období,
+                        převede je do stavu <code>K přeobjednání</code> a uvolní kalendářní sloty.
+                    </p>
+
+                    <form th:action="@{/call-list/nahlasit-nepritomnost}" th:object="${novaNepritomnost}" method="post">
+                        <div class="form-group">
+                            <label class="form-label" for="nepritomnostLekar">Lékař *</label>
+                            <select id="nepritomnostLekar" th:field="*{lekarId}" class="form-control" required>
+                                <option value="">-- Vyberte lékaře --</option>
+                                <option th:each="l : ${lekari}"
+                                        th:value="${l.id}"
+                                        th:text="${l.celeJmeno + ' (' + l.specializace + ')'}">
+                                    MUDr. Jana Hrubá
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="nepritomnostOd">Začátek nepřítomnosti *</label>
+                            <input type="datetime-local" id="nepritomnostOd" th:field="*{odCas}" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="nepritomnostDo">Konec nepřítomnosti *</label>
+                            <input type="datetime-local" id="nepritomnostDo" th:field="*{doCas}" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="nepritomnostDuvod">Důvod nepřítomnosti</label>
+                            <input type="text" id="nepritomnostDuvod" th:field="*{duvod}" class="form-control"
+                                   placeholder="Např. Akutní onemocnění, kongres, plánovaná dovolená...">
+                        </div>
+
+                        <div style="margin-top: 1.5rem; text-align: right;">
+                            <button type="submit" class="btn btn-secondary" style="color: var(--danger); border-color: #fca5a5;"
+                                    onclick="return confirm('Potvrdit nahlášení nepřítomnosti? Dotčené rezervace se přesunou do Call-listu.')">
+                                Zaznamenat výpadek a vytvořit Call-list
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>
