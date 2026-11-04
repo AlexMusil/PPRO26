@@ -4,6 +4,7 @@ import cz.uhk.fim.ppro.ordinace.application.exception.BusinessRuleException;
 import cz.uhk.fim.ppro.ordinace.application.exception.DuplicateEntityException;
 import cz.uhk.fim.ppro.ordinace.application.model.Pacient;
 import cz.uhk.fim.ppro.ordinace.infrastructure.repository.PacientRepository;
+import cz.uhk.fim.ppro.ordinace.infrastructure.repository.RezervaceRepository;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.PacientCreateDto;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.PacientResponseDto;
 import org.junit.jupiter.api.BeforeEach;
