@@ -21,7 +21,7 @@ public class VykazRestController {
         this.vykazService = vykazService;
     }
 
-    @GetMapping("/mesicni")
+    @GetMapping({"", "/mesicni"})
     public ResponseEntity<VykazMesicniDto> getMesicniVykaz(
             @RequestParam(required = false) Integer rok,
             @RequestParam(required = false) Integer mesic,

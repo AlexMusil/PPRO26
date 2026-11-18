@@ -22,6 +22,23 @@ public class RezervaceRestController {
         this.rezervaceService = rezervaceService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<RezervaceResponseDto>> getAllRezervace(
+            @RequestParam(required = false) UUID pacientId,
+            @RequestParam(required = false) UUID lekarId) {
+        if (pacientId != null) {
+            return ResponseEntity.ok(rezervaceService.getRezervaceByPacient(pacientId));
+        }
+        if (lekarId != null) {
+            return ResponseEntity.ok(rezervaceService.getRezervaceByLekarAndObdobi(
+                    lekarId,
+                    java.time.LocalDateTime.now().minusMonths(6),
+                    java.time.LocalDateTime.now().plusMonths(6)
+            ));
+        }
+        return ResponseEntity.ok(rezervaceService.getAllRezervace());
+    }
+
     @PostMapping
     public ResponseEntity<RezervaceResponseDto> createRezervace(@Valid @RequestBody RezervaceCreateDto dto) {
         RezervaceResponseDto response = rezervaceService.createRezervace(dto);

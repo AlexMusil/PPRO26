@@ -282,3 +282,12 @@ docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn
       - Implementována sada unit testů pro doménovou byznys logiku (`RezervaceServiceTest`, `NavstevaServiceTest`, `VykazServiceTest`).
       - Implementovány integrační testy REST kontrolerů (`RezervaceRestControllerTest`, `VykonRestControllerTest`).
 
+- **2026-11-18:**
+  - **Opravy v šablonách a rozšíření REST API:**
+    - Odstraněna nekompatibilita šablony `kalendar.html` s Thymeleaf 3.1+ (nahrazen zakázaný dynamický atribut `th:onclick` za standardní HTML5 atribut `data-cas` s nevtíravým obslužným JavaScriptem pro předvyplnění rezervačního formuláře).
+    - Opraven chybějící import `RezervaceRepository` v unit testu `PacientServiceTest`.
+    - Rozšířeno REST API:
+      - Přidán endpoint `GET /api/rezervace` s volitelnými parametry `pacientId` a `lekarId` pro rychlý přehled rezervací (zabránění chybám 405 Method Not Allowed).
+      - Sjednocen přístup k výkaznictví přes `GET /api/vykazy` i `GET /api/vykazy/mesicni`.
+    - Kompletní verifikace všech webových stránek (`/`, `/pacienti`, `/pacienti/{id}`, `/kalendar`, `/lekari`, `/navstevy`, `/vykazy`, `/call-list`) i REST rozhraní v Docker kontejneru (`ordinace_app` + `ordinace_db`).
+

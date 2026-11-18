@@ -42,6 +42,13 @@ public class RezervaceService {
                 .orElseThrow(() -> new EntityNotFoundException("Rezervace s ID " + id + " nebyla nalezena."));
     }
 
+    public List<RezervaceResponseDto> getAllRezervace() {
+        return rezervaceRepository.findAllWithDetails()
+                .stream()
+                .map(RezervaceResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     public List<RezervaceResponseDto> getRezervaceByPacient(UUID pacientId) {
         return rezervaceRepository.findByPacientIdOrderByCasOdDesc(pacientId)
                 .stream()

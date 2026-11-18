@@ -146,8 +146,8 @@
                     <div th:each="s : ${entry.value}">
                         <!-- Volný slot -->
                         <div th:if="${s.volno}"
-                             class="slot-card free"
-                             th:onclick="'predvyplnitFormular(\'' + ${#temporals.format(s.casOd, 'yyyy-MM-dd''T''HH:mm')} + '\')'"
+                             class="slot-card free slot-booking-btn"
+                             th:data-cas="${#temporals.format(s.casOd, 'yyyy-MM-dd''T''HH:mm')}"
                              title="Kliknutím založíte rezervaci pro tento čas">
                             <div>
                                 <strong th:text="${#temporals.format(s.casOd, 'HH:mm')}">08:00</strong> -
@@ -261,6 +261,14 @@
                 input.focus();
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.slot-booking-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    predvyplnitFormular(btn.getAttribute('data-cas'));
+                });
+            });
+        });
     </script>
 </body>
 </html>

@@ -43,5 +43,8 @@ public interface RezervaceRepository extends JpaRepository<Rezervace, UUID> {
 
     @Query("SELECT r FROM Rezervace r JOIN FETCH r.pacient JOIN FETCH r.lekar WHERE r.stav = cz.uhk.fim.ppro.ordinace.application.model.StavRezervace.K_PREOBJEDNANI ORDER BY r.casOd ASC")
     List<Rezervace> findVsechnyKPreobjednani();
+
+    @Query("SELECT r FROM Rezervace r JOIN FETCH r.pacient JOIN FETCH r.lekar ORDER BY r.casOd DESC")
+    List<Rezervace> findAllWithDetails();
 }
 
