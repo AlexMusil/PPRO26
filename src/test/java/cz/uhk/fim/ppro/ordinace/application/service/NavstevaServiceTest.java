@@ -111,5 +111,16 @@ class NavstevaServiceTest {
         assertThrows(BusinessRuleException.class, () -> navstevaService.createNavsteva(dto));
         verify(navstevaRepository, never()).save(any());
     }
+
+    @Test
+    @DisplayName("getAllNavstevy vrací seznam realizovaných návštěv s detaily")
+    void testGetAllNavstevy() {
+        Navsteva n = new Navsteva(UUID.randomUUID(), minulaRezervace, LocalDateTime.now().minusDays(1), "Zpráva", "Klid");
+        when(navstevaRepository.findAllWithDetails()).thenReturn(List.of(n));
+
+        List<NavstevaResponseDto> list = navstevaService.getAllNavstevy();
+        assertEquals(1, list.size());
+        assertEquals(n.getId(), list.get(0).getId());
+    }
 }
 

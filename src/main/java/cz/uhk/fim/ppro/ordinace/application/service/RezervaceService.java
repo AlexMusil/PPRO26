@@ -77,6 +77,13 @@ public class RezervaceService {
                 .collect(Collectors.toList());
     }
 
+    public List<RezervaceResponseDto> getZpusobileRezervaceKRealizaci(LocalDateTime nyni) {
+        return rezervaceRepository.findZpusobileKRealizaci(nyni)
+                .stream()
+                .map(RezervaceResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public RezervaceResponseDto createRezervace(RezervaceCreateDto dto) {
         Pacient pacient = pacientRepository.findById(dto.getPacientId())

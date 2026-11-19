@@ -169,5 +169,16 @@ class RezervaceServiceTest {
         assertEquals(1, dotcene.size());
         assertEquals(StavRezervace.K_PREOBJEDNANI, dotcene.get(0).getStav());
     }
+
+    @Test
+    @DisplayName("Způsobilé rezervace k realizaci vrací pouze plánované minulé termíny")
+    void testGetZpusobileRezervaceKRealizaci() {
+        Rezervace minula = new Rezervace(UUID.randomUUID(), pacient, lekar, pondeliRano, pondeliRano.plusMinutes(30), StavRezervace.PLANOVANA, "Kontrola");
+        when(rezervaceRepository.findZpusobileKRealizaci(any(LocalDateTime.class))).thenReturn(List.of(minula));
+
+        List<RezervaceResponseDto> result = rezervaceService.getZpusobileRezervaceKRealizaci(LocalDateTime.now());
+        assertEquals(1, result.size());
+        assertEquals(minula.getId(), result.get(0).getId());
+    }
 }
 

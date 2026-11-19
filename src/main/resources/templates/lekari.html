@@ -12,69 +12,56 @@
 
     <div class="container">
 
+        <!-- 1. Přehled lékařů ordinace: 3 přehledné karty vedle sebe pro okamžitou orientaci -->
+        <div style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                Lékaři ordinace (kliknutím zobrazíte rozvrh)
+            </h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+                <a th:each="l : ${lekari}"
+                   th:href="@{/lekari(lekarId=${l.id})}"
+                   class="card"
+                   style="text-decoration: none; color: inherit; padding: 1.25rem; transition: all 0.2s;"
+                   th:style="${vybranyLekar != null && vybranyLekar.id == l.id ? 'border: 2px solid var(--primary); background: #f0fdf4; box-shadow: var(--shadow-md);' : 'background: white; border: 1px solid var(--border);'}">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong style="font-size: 1.1rem; color: var(--text-main);" th:text="${l.celeJmeno}">MUDr. Jana Hrubá</strong>
+                        <span th:if="${vybranyLekar != null && vybranyLekar.id == l.id}"
+                              class="badge-status badge-probehla" style="font-size: 0.75rem;">Aktivní výběr</span>
+                    </div>
+                    <div style="color: var(--primary); font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;" th:text="${l.specializace}">Všeobecné praktické lékařství</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; border-top: 1px dashed var(--border); padding-top: 0.5rem;">
+                        <span th:text="${l.telefon}">+420 495 123 451</span>
+                        <span style="font-weight: 600; color: var(--primary);">Zobrazit hodiny &rarr;</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 2. Hlavní rozvržení: prohozené boxy – ordinační hodiny mají hlavní široký prostor vlevo -->
         <div class="main-grid">
 
-            <!-- Seznam lékařů -->
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        Lékaři ordinace
-                    </h3>
-                </div>
-                <div class="card-body" style="padding: 0;">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Lékař</th>
-                                    <th>Specializace</th>
-                                    <th>Kontakt</th>
-                                    <th>Akce</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="l : ${lekari}" th:style="${vybranyLekar != null && vybranyLekar.id == l.id ? 'background-color: var(--primary-light);' : ''}">
-                                    <td>
-                                        <strong th:text="${l.celeJmeno}">MUDr. Jana Hrubá</strong>
-                                    </td>
-                                    <td th:text="${l.specializace}">Všeobecné praktické lékařství</td>
-                                    <td>
-                                        <div th:text="${l.telefon}">+420 495 123 451</div>
-                                        <small class="text-muted" th:text="${l.email}">hruba@ordinace-vyhlidka.cz</small>
-                                    </td>
-                                    <td>
-                                        <a th:href="@{/lekari(lekarId=${l.id})}" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.85rem;">
-                                            Zobrazit rozvrh
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Detail ordinačních hodin vybraného lékaře -->
+            <!-- Hlavní široký box vlevo (2fr): Detail ordinačních hodin vybraného lékaře -->
             <div class="card" th:if="${vybranyLekar != null}">
-                <div class="card-header">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
                     <h3 class="card-title">
                         <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                         Ordinační hodiny: <span th:text="${vybranyLekar.celeJmeno}">MUDr. Jana Hrubá</span>
                     </h3>
+                    <span class="system-badge" th:text="${vybranyLekar.specializace}">Všeobecné praktické lékařství</span>
                 </div>
                 <div class="card-body">
-                    <p style="margin-bottom: 1rem; color: var(--text-muted);">
-                        Specializace: <strong th:text="${vybranyLekar.specializace}">Všeobecné lékařství</strong>
+                    <p style="margin-bottom: 1.25rem; color: var(--text-muted); font-size: 0.9rem;">
+                        Týdenní přehled ordinačních oken v ordinaci i případných externích pracovištích:
                     </p>
 
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Den</th>
-                                    <th>Čas od - do</th>
-                                    <th>Pracoviště / Adresa</th>
+                                    <th>Den v týdnu</th>
+                                    <th>Ordinační doba</th>
+                                    <th>Pracoviště a adresa</th>
                                     <th>Příjem rezervací</th>
                                     <th>Poznámka</th>
                                 </tr>
@@ -83,7 +70,7 @@
                                 <tr th:each="od : ${rozvrh}">
                                     <td><strong th:text="${od.denNazev}">Pondělí</strong></td>
                                     <td>
-                                        <code th:text="${#temporals.format(od.casOd, 'HH:mm') + ' - ' + #temporals.format(od.casDo, 'HH:mm')}">08:00 - 13:00</code>
+                                        <code style="font-size: 0.95rem; font-weight: 700;" th:text="${#temporals.format(od.casOd, 'HH:mm') + ' - ' + #temporals.format(od.casDo, 'HH:mm')}">08:00 - 13:00</code>
                                     </td>
                                     <td th:text="${od.pracoviste}">Ordinace Na Vyhlídce</td>
                                     <td>
@@ -93,7 +80,7 @@
                                     <td style="color: var(--text-muted); font-size: 0.88rem;" th:text="${od.poznamka}">Běžná ordinace</td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(rozvrh)}">
-                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                                         Tento lékař nemá definované žádné ordinační hodiny.
                                     </td>
                                 </tr>
@@ -101,11 +88,51 @@
                         </table>
                     </div>
 
-                    <div style="margin-top: 1.5rem;">
+                    <div style="margin-top: 1.75rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
                         <a th:href="@{/kalendar(lekarId=${vybranyLekar.id})}" class="btn btn-primary">
                             <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                            Otevřít kalendář a objednat pacienta
+                            Otevřít kalendář a objednat pacienta &rarr;
                         </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pravý box (1.2fr): Kontakt a profil lékaře -->
+            <div class="card" th:if="${vybranyLekar != null}">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        Kontakt a profil lékaře
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div style="margin-bottom: 1.25rem;">
+                        <div style="color: var(--text-muted); font-size: 0.82rem; font-weight: 600;">Ošetřující lékař</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; margin-top: 0.2rem;" th:text="${vybranyLekar.celeJmeno}">MUDr. Jana Hrubá</div>
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <div style="color: var(--text-muted); font-size: 0.82rem; font-weight: 600;">Specializace</div>
+                        <div style="font-size: 0.95rem; font-weight: 600; color: var(--primary); margin-top: 0.2rem;" th:text="${vybranyLekar.specializace}">Všeobecné praktické lékařství</div>
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <div style="color: var(--text-muted); font-size: 0.82rem; font-weight: 600;">Telefon do ordinace</div>
+                        <div style="font-size: 1.05rem; font-weight: 600; margin-top: 0.2rem;">
+                            <a th:href="'tel:' + ${vybranyLekar.telefon}" style="text-decoration: none; color: var(--primary);" th:text="${vybranyLekar.telefon}">+420 495 123 451</a>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <div style="color: var(--text-muted); font-size: 0.82rem; font-weight: 600;">E-mail</div>
+                        <div style="font-size: 0.9rem; margin-top: 0.2rem;">
+                            <a th:href="'mailto:' + ${vybranyLekar.email}" style="text-decoration: none; color: var(--text-main);" th:text="${vybranyLekar.email}">hruba@ordinace-vyhlidka.cz</a>
+                        </div>
+                    </div>
+
+                    <div style="padding: 1rem; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted);">
+                        💡 <strong>Upozornění pro recepci:</strong><br>
+                        V úterý odpoledne ordinuje MUDr. Svoboda na externí klinice. Tyto termíny nelze rezervovat přes ordinaci Na Vyhlídce.
                     </div>
                 </div>
             </div>
@@ -118,4 +145,3 @@
 
 </body>
 </html>
-

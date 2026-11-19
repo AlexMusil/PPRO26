@@ -16,6 +16,24 @@ public interface NavstevaRepository extends JpaRepository<Navsteva, UUID> {
 
     Optional<Navsteva> findByRezervaceId(UUID rezervaceId);
 
+    @Query("SELECT DISTINCT n FROM Navsteva n " +
+           "JOIN FETCH n.rezervace r " +
+           "JOIN FETCH r.pacient p " +
+           "JOIN FETCH r.lekar l " +
+           "LEFT JOIN FETCH n.vykony nv " +
+           "LEFT JOIN FETCH nv.vykon " +
+           "ORDER BY n.datumCas DESC")
+    List<Navsteva> findAllWithDetails();
+
+    @Query("SELECT n FROM Navsteva n " +
+           "JOIN FETCH n.rezervace r " +
+           "JOIN FETCH r.pacient p " +
+           "JOIN FETCH r.lekar l " +
+           "LEFT JOIN FETCH n.vykony nv " +
+           "LEFT JOIN FETCH nv.vykon " +
+           "WHERE n.id = :id")
+    Optional<Navsteva> findByIdWithDetails(@Param("id") UUID id);
+
     @Query("SELECT n FROM Navsteva n " +
            "JOIN FETCH n.rezervace r " +
            "JOIN FETCH r.pacient p " +

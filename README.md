@@ -290,4 +290,11 @@ docker run --rm -v "${PWD}:/app" -w /app maven:3.9-eclipse-temurin-21-alpine mvn
       - Přidán endpoint `GET /api/rezervace` s volitelnými parametry `pacientId` a `lekarId` pro rychlý přehled rezervací (zabránění chybám 405 Method Not Allowed).
       - Sjednocen přístup k výkaznictví přes `GET /api/vykazy` i `GET /api/vykazy/mesicni`.
     - Kompletní verifikace všech webových stránek (`/`, `/pacienti`, `/pacienti/{id}`, `/kalendar`, `/lekari`, `/navstevy`, `/vykazy`, `/call-list`) i REST rozhraní v Docker kontejneru (`ordinace_app` + `ordinace_db`).
+  - **Oprava LazyInitializationException na stránce `/navstevy` a dodržení 3-vrstvé architektury:**
+    - Odstraněna přímá závislost `NavstevaWebController` na repozitáři `RezervaceRepository` (striktní směr prezentační $\to$ aplikační vrstva).
+    - Zavedena servisní metoda `RezervaceService.getZpusobileRezervaceKRealizaci(...)` a repozitářový dotaz `findZpusobileKRealizaci` s explicitním `JOIN FETCH r.pacient JOIN FETCH r.lekar`, čímž byla odstraněna chyba `LazyInitializationException` při vypnutém `open-in-view`.
+    - Optimalizováno načítání návštěv přes `NavstevaRepository.findAllWithDetails()` s eager fetchingem rezervací, lékařů, pacientů a výkonů (eliminace N+1 dotazů).
+  - **Zpřehlednění a redesign stránky lékařů a ordinačních hodin (`/lekari`):**
+    - Umístěny 3 přehledné profilové karty lékařů ordinace do horní části stránky pro okamžitou orientaci (kliknutím lze přepínat lékaře).
+    - Prohozeno rozvržení boxů – detail týdenního rozvrhu ordinačních hodin byl přesunut do hlavního širokého sloupce vlevo (`2fr`), aby tabulka měla dostatek prostoru pro všechny údaje, zatímco kontaktní karta lékaře byla umístěna do pravého sloupce (`1.2fr`).
 

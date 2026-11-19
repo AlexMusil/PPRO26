@@ -34,14 +34,14 @@ public class NavstevaService {
     }
 
     public List<NavstevaResponseDto> getAllNavstevy() {
-        return navstevaRepository.findAll()
+        return navstevaRepository.findAllWithDetails()
                 .stream()
                 .map(NavstevaResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     public NavstevaResponseDto getNavstevaById(UUID id) {
-        return navstevaRepository.findById(id)
+        return navstevaRepository.findByIdWithDetails(id)
                 .map(NavstevaResponseDto::fromEntity)
                 .orElseThrow(() -> new EntityNotFoundException("Návštěva s ID " + id + " nebyla nalezena."));
     }

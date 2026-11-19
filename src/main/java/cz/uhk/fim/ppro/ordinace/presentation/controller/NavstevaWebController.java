@@ -2,11 +2,9 @@ package cz.uhk.fim.ppro.ordinace.presentation.controller;
 
 import cz.uhk.fim.ppro.ordinace.application.exception.BusinessRuleException;
 import cz.uhk.fim.ppro.ordinace.application.exception.EntityNotFoundException;
-import cz.uhk.fim.ppro.ordinace.application.model.StavRezervace;
 import cz.uhk.fim.ppro.ordinace.application.service.NavstevaService;
 import cz.uhk.fim.ppro.ordinace.application.service.RezervaceService;
 import cz.uhk.fim.ppro.ordinace.application.service.VykonService;
-import cz.uhk.fim.ppro.ordinace.infrastructure.repository.RezervaceRepository;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.NavstevaCreateDto;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.NavstevaResponseDto;
 import cz.uhk.fim.ppro.ordinace.presentation.dto.NavstevaVykonPolozkaDto;
@@ -22,21 +20,20 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/navstevy")
 public class NavstevaWebController {
 
     private final NavstevaService navstevaService;
-    private final RezervaceRepository rezervaceRepository;
+    private final RezervaceService rezervaceService;
     private final VykonService vykonService;
 
     public NavstevaWebController(NavstevaService navstevaService,
-                                 RezervaceRepository rezervaceRepository,
+                                 RezervaceService rezervaceService,
                                  VykonService vykonService) {
         this.navstevaService = navstevaService;
-        this.rezervaceRepository = rezervaceRepository;
+        this.rezervaceService = rezervaceService;
         this.vykonService = vykonService;
     }
 
@@ -52,11 +49,7 @@ public class NavstevaWebController {
         model.addAttribute("vykony", vykony);
 
         // Najít rezervace způsobilé k realizaci: stav PLANOVANA s časem od <= now()
-        List<RezervaceResponseDto> zpusobileRezervace = rezervaceRepository.findAll()
-                .stream()
-                .filter(r -> r.getStav() == StavRezervace.PLANOVANA && !r.getCasOd().isAfter(LocalDateTime.now()))
-                .map(RezervaceResponseDto::fromEntity)
-                .collect(Collectors.toList());
+        List<RezervaceResponseDto> zpusobileRezervace = rezervaceService.getZpusobileRezervaceKRealizaci(LocalDateTime.now());
         model.addAttribute("zpusobileRezervace", zpusobileRezervace);
 
         if (!model.containsAttribute("novaNavsteva")) {
